@@ -8,14 +8,14 @@
 ## 这个项目是干什么的？
 
 这是一个面向 **Minecraft Java 版 1.21.1 + NeoForge** 的**开箱即用开发起点**：  
-你 clone / 使用模板之后，既能立刻搭好模组工程，也能让 AI 按统一红线辅助写代码、查源码、编译自检。
+你 clone / 使用模板之后，就可以获得一个1.21.1neoforge的模组模板，以及一个包含了工具,skills,mcp等等能帮助ai开发模组的.agents文件夹,它能让按统一红线辅助写代码、查源码、编译自检。
 
 它**明确分成两部分**：
 
 | 部分 | 是什么 | 包含什么 |
 |------|--------|----------|
-| **① `.agents/`** | **AI 辅助开发工具包**（可单独理解、也可拷到其他 NeoForge 1.21.1 工程复用） | 开发红线（`AGENTS.md`）、NeoForge 技能与参考文档、本地源码 MCP 探针、工作区初始化与编译自愈脚本等 |
-| **② 除 `.agents` 以外的工程** | **模组开发模板**（标准 Gradle / NeoForge 脚手架） | `src/`、`build.gradle`、`gradle.properties`、`gradlew`、示例模组 `tutorialmod` 等——负责「能编译、能跑客户端」的模组工程本身 |
+| **① `.agents/`** | **AI 辅助开发工具包**（可单独理解、也可拷到其他 NeoForge 1.21.1 工程复用） | 开发红线（`AGENTS.md`）、NeoForge 技能与参考文档、本地源码 MCP 探针、工作区初始化与编译自愈脚本等一系列帮助ai开发模组的东西 |
+| **② 除 `.agents` 以外的工程** | **1.21.1neoforge模组开发模板**（标准 Gradle / NeoForge 脚手架） | `src/`、`build.gradle`、`gradle.properties`、`gradlew`、示例模组 `tutorialmod` 等——负责「能编译、能跑客户端」的模组工程本身 |
 
 ```text
 neoforge-1.21.1-ai-starter/
