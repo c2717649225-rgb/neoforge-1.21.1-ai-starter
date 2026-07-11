@@ -5,7 +5,13 @@
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.1.x-orange)](https://neoforged.net/)
 [![Java](https://img.shields.io/badge/Java-21-blue)](https://adoptium.net/)
 
-面向 **Minecraft 1.21.1 + NeoForge 21.1.x** 的开箱即用起点：一套能编译的模组脚手架，外加一套帮 AI 写模组的工具包。
+## 这个项目是干什么的？
+
+这是一个面向 **Minecraft Java 版 1.21.1 + NeoForge** 的**开箱即用开发起点**。  
+你 clone / 使用本模板之后，会同时得到：
+
+1. 一套 **1.21.1 NeoForge 模组工程模板**（能编译、能跑客户端）；  
+2. 一个 **`.agents` 文件夹**：内含工具、skills、MCP 探针等，用来帮助 AI 按统一红线写代码、查源码、做编译自检。
 
 ---
 
