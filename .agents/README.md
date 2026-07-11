@@ -19,9 +19,7 @@
 - [ ] **步骤二：注册并激活 MCP 源码探针 (MANDATORY / REQUIRED)**
   - 本探针直接为 AI 提供了检索 Minecraft 原版与 NeoForge 源码的接口。**如果不注册 MCP 探针，AI 将由于无法检索真源码而自动停工。**
   - **注册路径**：`/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py`
-  - **客户端配置表**：
-    - **OpenCode**：项目已置有 `opencode.json`，在 OpenCode 内确认 `minecraft-mcp` 插件已启用。
-    - **Cursor / Claude Code / Cline / Aider**：在您对应客户端的全局或项目 MCP 配置文件（如 `mcpServers.json` / `cline_mcp_settings.json`）中添加以下服务器定义：
+  - **通用配置方式**：在你使用的 AI 客户端的 MCP / 工具服务器配置中，注册本地探针（具体菜单名因客户端而异，如 Cursor、Claude Code、Cline、Aider、Grok 等）。多数客户端接受类似如下的服务器定义：
       ```json
       {
         "mcpServers": {
@@ -34,8 +32,7 @@
         }
       }
       ```
-      *(注意：请将 `args` 中的路径修改为您本地当前项目 `minecraft_mcp.py` 的真实绝对物理路径)*。
-    - **其他支持 MCP 的客户端（包括 Grok）**：按客户端 MCP 配置面板，注册指向本地 `/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py` 的探针命令。
+      *(请将 `args` 中的路径改为本机项目中 `minecraft_mcp.py` 的绝对路径；字段名以当前客户端文档为准。)*
 
 - [ ] **步骤三：执行一键工作区初始化**
   - 在聊天框中向 AI 助手下达指令：`“帮我初始化一下这个工作区”`，AI 会自动跑脚本重构包结构和 Mod ID（见下文第 3 节说明）。
