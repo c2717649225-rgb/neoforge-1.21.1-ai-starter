@@ -20,13 +20,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
--------------------------------------------------------------------------------
-Notes:
-
-1. Scaffolding derived from the NeoForged MDK is also described in
-   TEMPLATE_LICENSE.txt (MIT, Copyright (c) 2023 NeoForged project).
-
-2. The license of a mod you publish from this template should be set via
-   mod_license in gradle.properties (and your distribution terms). That is
-   separate from this repository template license.
