@@ -1,0 +1,131 @@
+# NeoForge 1.21.1 Event System Guidelines
+
+NeoForge uses an event-driven architecture. There are two primary event buses you must use correctly.
+
+## 1. The Two Event Buses
+
+| Bus Name | How to Access | Event Types Handled |
+| :--- | :--- | :--- |
+| **Mod Event Bus** (Mod Bus) | Passed into the Mod constructor as `IEventBus modEventBus`. | Mod startup lifecycle events (Setup, Client/Server setup, Registry events, registering networking payloads, registering capabilities). |
+| **NeoForge Event Bus** (Game Bus) | `NeoForge.EVENT_BUS` | Game loop events (Tick events, player interaction, block breaks, entity spawning, server start/stop events, capability queries). |
+
+---
+
+## 2. Registering Events
+
+### Method A: Manual Listener Registration (Recommended for Mod Bus)
+
+Register specific listener methods directly to the bus in your main mod constructor:
+
+```java
+public class MyMod {
+    public MyMod(IEventBus modEventBus, ModContainer modContainer) {
+        // Registering listener to the Mod Event Bus
+        modEventBus.addListener(this::commonSetup);
+        
+        // Registering listener to the NeoForge Game Event Bus
+        NeoForge.EVENT_BUS.addListener(this::onPlayerTick);
+    }
+
+    private void commonSetup(FMLCommonSetupEvent event) {
+        // Mod lifecycle setup code
+    }
+
+    private void onPlayerTick(PlayerTickEvent.Post event) {
+        // Runs every tick for players
+    }
+}
+```
+
+### Method B: `@EventBusSubscriber` Annotation (Automatic Discovery)
+
+Use this annotation on classes containing static event handler methods annotated with `@SubscribeEvent`.
+
+```java
+// Registering to the NeoForge Game Event Bus automatically
+@EventBusSubscriber(modid = MyMod.MODID)
+public class GameEventHandler {
+    @SubscribeEvent
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        System.out.println("Block broken by: " + event.getPlayer().getName().getString());
+    }
+}
+```
+
+In NeoForge 1.21.1+, the `bus` parameter in `@EventBusSubscriber` is **deprecated** (omitted defaults to the Game Bus). The system automatically routes events:
+*   Events implementing **`IModBusEvent`** (e.g. `FMLClientSetupEvent`, `RegisterEvent`, `EntityAttributeCreationEvent`) are automatically routed to the **Mod Bus**.
+*   All other events are routed to the **Game Bus**.
+
+Therefore, you should omit the `bus` parameter entirely:
+
+```java
+// Mod Bus events are automatically discovered because FMLClientSetupEvent implements IModBusEvent
+@EventBusSubscriber(modid = MyMod.MODID)
+public class ModLifecycleHandler {
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        // Client-side initialization code
+    }
+}
+```
+
+@EventBusSubscriber(modid = MyMod.MODID, value = Dist.CLIENT)
+public class ClientOnlyHandler {
+    // Methods here will only load on the physical client
+}
+```
+
+---
+
+## 3. ⚠️ 1.21.1 事件系统重大变更与编译错误自愈
+
+### 3.1 核心事件更名与彻底删除 (Event Replacement)
+- **`LivingTickEvent` 彻底删除**：
+  - ❌ 错误：`public static void onLivingTick(LivingTickEvent event) { ... }`
+  - ✅ 修正：1.21.1 中必须改为监听 `EntityTickEvent.Post` (或 `Pre`)，然后在内部进行类型判断：
+    ```java
+    @SubscribeEvent
+    public static void onEntityTick(EntityTickEvent.Post event) {
+        if (event.getEntity() instanceof LivingEntity living) {
+            // 业务逻辑
+        }
+    }
+    ```
+- **`TickEvent` 彻底删除**：
+  - ❌ 错误：`net.neoforged.neoforge.event.TickEvent.PlayerTickEvent`。
+  - ✅ 修正：`TickEvent` 被整包移除，其下子类被重构为独立的事件类。如玩家 Tick 事件改用 `net.neoforged.neoforge.event.tick.PlayerTickEvent`。
+- **`LivingHurtEvent` 彻底删除**：
+  - ❌ 错误：试图使用 `LivingHurtEvent` 拦截伤害前属性。
+  - ✅ 修正：1.21.1 废除了生物受伤事件，拦截受到伤害前属性一律使用 **`LivingIncomingDamageEvent`**。
+
+### 3.2 玩家与实体获取 API 统一
+- ❌ 错误：在事件中使用 `event.getPlayer()` 获取触发玩家。
+- ✅ 修正：1.21.1 中 `getPlayer()` 被彻底废除。大部分事件统一为继承 `EntityEvent`，获取当前实体一律使用 **`event.getEntity()`** 并转型。如 `BlockEvent.BreakEvent` 中使用 `event.getPlayer()` 的旧写法已废弃，直接改为 `event.getEntity()`。
+
+### 3.3 伤害源属性检测 (DamageSource Tags)
+- ❌ 错误：使用 `source.isBypassInvul()`、`source.isMagic()`、`source.isFire()`、`source.isExplosion()` 等 boolean 判断伤害类型属性。
+- ✅ 修正：1.21.1 中上述 boolean 快捷方法全部被删除。检测伤害源属性**必须**使用全新的标签系统 (Damage Type Tags)：
+  ```java
+  import net.minecraft.tags.DamageTypeTags;
+  
+  if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) { ... }
+  if (source.is(DamageTypeTags.IS_FIRE)) { ... }
+  ```
+
+### 3.4 玩家克隆与数据迁移 (PlayerEvent.Clone)
+- ❌ 错误：在 `PlayerEvent.Clone` 中，使用 `original.reviveCaps()` 和 `original.invalidateCaps()` 来迁移 Capability 数据。
+- ✅ 修正：1.21.1 彻底删除了这两个方法。直接通过 Attachment 机制进行复制：
+  ```java
+  @SubscribeEvent
+  public static void onPlayerClone(PlayerEvent.Clone event) {
+      Player original = event.getOriginal();
+      Player newPlayer = event.getEntity();
+      
+      // 数据附件直接迁移
+      if (original.hasData(ModAttachments.MANA)) {
+          newPlayer.setData(ModAttachments.MANA, original.getData(ModAttachments.MANA));
+      }
+  }
+  ```
+
+```

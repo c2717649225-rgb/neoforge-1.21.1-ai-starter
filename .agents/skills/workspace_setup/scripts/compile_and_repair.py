@@ -1,0 +1,124 @@
+import os
+import sys
+import subprocess
+import re
+
+def main():
+    print("==================================================")
+    print("Starting Automated Compilation & Error Diagnostics...")
+    print("==================================================")
+    
+    # 检查是否包含 --with-data 参数
+    with_data = "--with-data" in sys.argv
+    
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # 动态向上解析定位项目根目录 (.agents/skills/workspace_setup/scripts/)
+    project_dir = os.path.realpath(os.path.join(script_dir, "..", "..", "..", ".."))
+    
+    gradle_cmd = "gradlew.bat" if os.name == 'nt' else "./gradlew"
+    gradle_path = os.path.join(project_dir, gradle_cmd)
+    
+    if not os.path.exists(gradle_path):
+        print(f"Error: Gradle wrapper not found at {gradle_path}")
+        sys.exit(1)
+        
+    print("Step 1: Running gradlew compileJava...")
+    
+    # 运行编译，捕获编译输出
+    result = subprocess.run(
+        [gradle_path, "compileJava"],
+        cwd=project_dir,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding='utf-8',
+        errors='replace'
+    )
+    
+    if result.returncode != 0:
+        print("==================================================")
+        print("FAILURE: Compilation failed. Analyzing syntax errors...")
+        print("==================================================")
+        
+        full_output = result.stdout + "\n" + result.stderr
+        
+        # 匹配 Java 编译器的标准报错格式
+        error_pattern = re.compile(r"^(.*?\.java):(\d+):\s+(?:error|错误):\s+(.*)$", re.MULTILINE)
+        errors = error_pattern.findall(full_output)
+        
+        if not errors:
+            print("Could not parse structured compiler errors. Raw output tail:")
+            print("--------------------------------------------------")
+            lines = full_output.splitlines()
+            for line in lines[-40:]:
+                print(line)
+            sys.exit(1)
+            
+        print(f"Found {len(errors)} structured compiler errors:")
+        print("--------------------------------------------------")
+        for idx, (filepath, line_str, msg) in enumerate(errors, 1):
+            rel_path = os.path.relpath(filepath, project_dir).replace("\\", "/")
+            print(f"Error #{idx}:")
+            print(f"  File: {rel_path} (Line {line_str})")
+            print(f"  Message: {msg.strip()}")
+            
+            # 精准读取错误行上下文 (上下各三行)
+            try:
+                with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+                    file_lines = f.readlines()
+                line_idx = int(line_str) - 1
+                start = max(0, line_idx - 3)
+                end = min(len(file_lines), line_idx + 4)
+                print("  Context:")
+                for l_num in range(start, end):
+                    marker = ">>>" if l_num == line_idx else "   "
+                    print(f"    {marker} L{l_num+1}: {file_lines[l_num].rstrip()}")
+            except Exception as ex:
+                print(f"    (Could not load context lines: {ex})")
+            print("--------------------------------------------------")
+            
+        print("\nCRITICAL INSTRUCTION FOR AI AGENT:")
+        print("You MUST fix the above syntax errors immediately using code editing tools.")
+        print("After editing, run this compiler repair script again. Repeat this cycle until compile passes.")
+        sys.exit(1)
+        
+    print("Step 1 SUCCESS: Compilation passed 100%! No syntax errors.")
+    
+    # 如果指定了 --with-data，则接着运行 runData
+    if with_data:
+        print("\nStep 2: Running gradlew runData (DataGen Update)...")
+        data_result = subprocess.run(
+            [gradle_path, "runData"],
+            cwd=project_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding='utf-8',
+            errors='replace'
+        )
+        
+        if data_result.returncode != 0:
+            print("==================================================")
+            print("FAILURE: DataGen runData execution failed!")
+            print("==================================================")
+            print("Raw DataGen output tail:")
+            print("--------------------------------------------------")
+            lines = (data_result.stdout + "\n" + data_result.stderr).splitlines()
+            for line in lines[-40:]:
+                print(line)
+            sys.exit(1)
+            
+        print("==================================================")
+        print("SUCCESS: Compilation and DataGen completed successfully!")
+        print("Please verify that the generated resources (JSONs) exist in your output directory")
+        print("(typically src/generated/resources/ or the configured assets output folder).")
+        print("==================================================")
+        sys.exit(0)
+    else:
+        print("==================================================")
+        print("SUCCESS: Compilation passed 100%! No syntax errors.")
+        print("==================================================")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()
