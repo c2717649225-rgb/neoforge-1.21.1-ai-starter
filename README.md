@@ -5,24 +5,55 @@
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.1.x-orange)](https://neoforged.net/)
 [![Java](https://img.shields.io/badge/Java-21-blue)](https://adoptium.net/)
 
-开箱即用的 **Minecraft 1.21.1 + NeoForge 21.1.x** 模组开发脚手架。  
-内置 **`.agents` AI 运行时**：开发红线、NeoForge 参考技能库、本地源码 MCP 探针、编译自愈网关。
+## 这个项目是干什么的？
 
-仓库内最小示例骨架为 `tutorialmod`；用本模板开新模组时，改元数据并初始化即可。
+这是一个面向 **Minecraft Java 版 1.21.1 + NeoForge** 的**开箱即用开发起点**：  
+你 clone / 使用模板之后，既能立刻搭好模组工程，也能让 AI 按统一红线辅助写代码、查源码、编译自检。
+
+它**明确分成两部分**：
+
+| 部分 | 是什么 | 包含什么 |
+|------|--------|----------|
+| **① `.agents/`** | **AI 辅助开发工具包**（可单独理解、也可拷到其他 NeoForge 1.21.1 工程复用） | 开发红线（`AGENTS.md`）、NeoForge 技能与参考文档、本地源码 MCP 探针、工作区初始化与编译自愈脚本等 |
+| **② 除 `.agents` 以外的工程** | **模组开发模板**（标准 Gradle / NeoForge 脚手架） | `src/`、`build.gradle`、`gradle.properties`、`gradlew`、示例模组 `tutorialmod` 等——负责「能编译、能跑客户端」的模组工程本身 |
+
+```text
+neoforge-1.21.1-ai-starter/
+├── .agents/          ← ① AI 工具包（红线、skills、MCP、自检脚本）
+├── src/              ← ② 模组模板源码
+├── build.gradle      ← ② 构建与依赖
+├── gradle.properties ← ② 模组元数据（mod_id 等）
+├── gradlew*          ← ② Gradle 包装器
+└── README.md         ← 本说明（GitHub 首页介绍）
+```
+
+- 开**新模组**：以整仓为模板 → 改 `gradle.properties` → 跑初始化 → 接 MCP → 写业务代码。  
+- 只要 **AI 能力**：也可把 `.agents/` 拷进已有 1.21.1 NeoForge 项目（目标版本需一致）。  
+- 仓库内最小示例骨架为 `tutorialmod`，不是最终玩法，只是可编译的 starter。
 
 > **GitHub 语言统计**会偏 Python / JS（`.agents` 工具链），模组本体与构建仍是 **Java + Gradle**。
 
 ---
 
-## 这个模板提供什么
+## 两部分各自提供什么
+
+### ① `.agents`（AI 工具包）
 
 | 能力 | 说明 |
 |------|------|
-| **MDK 骨架** | NeoForge 1.21.1 可编译 starter（Java 21） |
-| **`.agents` 红线** | 1.21.1 硬约束（Data Components、客户端隔离、网络线程等） |
-| **源码 MCP 探针** | 检索本机 Gradle 缓存中的 Minecraft / NeoForge 源码（AI 必接） |
+| **开发红线** | 1.21.1 硬约束（Data Components、客户端隔离、网络线程等） |
+| **技能与参考** | NeoForge 常见系统的写法索引与示例 |
+| **源码 MCP 探针** | 检索本机 Gradle 缓存中的 Minecraft / NeoForge 源码（AI 侧建议必接） |
 | **工作区初始化** | 按 `gradle.properties` 一键对齐包名、资源命名空间、mixins 等 |
 | **编译网关** | `compile_and_repair.py`；注册/DataGen 变更可加 `--with-data` |
+
+### ② 模组模板（工程其余部分）
+
+| 能力 | 说明 |
+|------|------|
+| **MDK 骨架** | NeoForge 21.1.x + Java 21，可 `compileJava` / `runClient` |
+| **示例模组** | `tutorialmod` 最小入口与资源命名空间 |
+| **标准构建** | Gradle Wrapper、CI 构建工作流 |
 
 ---
 
@@ -111,7 +142,14 @@ python .agents/skills/workspace_setup/scripts/compile_and_repair.py --with-data
 
 ## English
 
-**NeoForge 1.21.1 AI Starter** — a Minecraft **1.21.1 / NeoForge 21.1.x** mod scaffold with an `.agents` AI runtime (rules, NeoForge skill refs, local source MCP probe, compile-and-repair gateway).
+**NeoForge 1.21.1 AI Starter** is a ready-to-use starting point for Minecraft **1.21.1 + NeoForge 21.1.x**. The repo has **two parts**:
+
+| Part | Role |
+|------|------|
+| **`.agents/`** | AI-assisted modding toolkit (rules, skills/refs, local source MCP probe, init + compile-and-repair scripts). Can be copied into other 1.21.1 NeoForge projects. |
+| **Everything else** | Mod development template (Gradle/NeoForge scaffold, `src/`, `tutorialmod` starter). |
+
+**Quick start**
 
 1. Edit `mod_id` / `mod_name` / `mod_group_id` in `gradle.properties`
 2. Run `python .agents/init_workspace.py`
