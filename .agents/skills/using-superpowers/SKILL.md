@@ -13,6 +13,8 @@ If you think there is even a 1% chance a skill might apply to what you are doing
 IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
 
 This is not negotiable. You cannot rationalize your way out of this.
+
+*例外：本项目中的 Minor 业务开发（添加配方、普通物品/方块、修复编译错、数值微调等非核心大重构）与纯概念咨询，100% 豁免此规则。此场景下，请直接加载并阅读 neoforge 领域 Skill 开始写码，严禁进行 brainstorming 与写 TDD 假测试。*
 </EXTREMELY-IMPORTANT>
 
 ## The Rule
@@ -36,7 +38,7 @@ These thoughts mean STOP—you're rationalizing:
 
 | Thought | Reality |
 |---------|---------|
-| "This is just a simple question" | Questions are tasks. Check for skills. |
+| "This is just a simple question" | Minor/Trivial questions are exempted. For Major tasks, invoke the skill. |
 | "I need more context first" | Skill check comes BEFORE clarifying questions. |
 | "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
 | "I can check git/files quickly" | Files lack conversation context. Check for skills. |
@@ -44,7 +46,7 @@ These thoughts mean STOP—you're rationalizing:
 | "This doesn't need a formal skill" | If a skill exists, use it. |
 | "I remember this skill" | Skills evolve. Read current version. |
 | "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Simple things become complex. Use it. |
+| "The skill is overkill" | Minor tasks are exempted. Major tasks must not bypass. |
 | "I'll just do this one thing first" | Check BEFORE doing anything. |
 | "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |

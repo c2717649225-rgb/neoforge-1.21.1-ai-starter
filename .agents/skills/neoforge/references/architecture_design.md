@@ -22,7 +22,7 @@
 
 ## 🌐 2. 跨平台移植与解耦架构 (Portability & Decoupling)
 
-为了确保核心业务逻辑能无缝移植到 Fabric，项目建议采用**平台代理包装层（Platform Delegation Layer）**架构：
+*注：本模板默认是纯 NeoForge 模组，底层推荐采用 Attachment 数据存盘。如遇到跨平台移植至 Fabric 的特殊要求，建议采用如下**平台代理包装层（Platform Delegation Layer）**解耦架构：*
 
 1. **业务逻辑与平台接口分离**：
    * 将核心逻辑（如物品交互、状态计算、实体 AI 属性决策）剥离至纯 Java 逻辑层。

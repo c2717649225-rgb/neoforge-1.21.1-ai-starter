@@ -15,19 +15,19 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 ## When to Use
 
-**Always:**
+**有 JUnit/GameTest 自动化测试套件时，Always 强制：**
 - New features
 - Bug fixes
 - Refactoring
 - Behavior changes
 
-**Exceptions (ask your human partner):**
+**例外情况 (Exceptions)：**
 - Throwaway prototypes
 - Generated code
 - Configuration files
-- Projects without JUnit/GameTest infrastructure (where compile-and-repair + runClient smoke tests are used instead)
+- 无自动化测试框架的工程（例如本 NeoForge 启动器模板项目。请改用 compile_and_repair 自检 + runClient 冒烟作为等效质量验证手段，不加载完整红绿循环）
 
-Thinking "skip TDD just this once"? Stop. That's rationalization.
+Thinking "skip TDD just this once"? Stop. That's rationalization (unless you are in a non-test environment project as stated above).
 
 ---
 
@@ -68,6 +68,8 @@ digraph tdd_cycle {
 ### RED - Write Failing Test
 
 Write one minimal test showing what should happen.
+
+*注：下方 TypeScript/npm 仅为通用示意；本仓库的真实检验命令为 gradle 编译及 compile_and_repair.py 自检，无需强制运行 npm。*
 
 <Good>
 ```typescript
@@ -282,9 +284,11 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 - "TDD is dogmatic, I'm being pragmatic"
 - "This is different because..."
 
-**All of these mean: Delete code. Start over with TDD.**
+**All of these mean: Delete code. Start over with TDD (on active testing environments).**
 
-## Example: Bug Fix
+*例外：对于无 GameTest 设施的项目，请严格以 compile_and_repair 编译与自检为准。绝对禁止删除已写好的可用代码去追求“纸上谈兵的空心化 TDD 测试”！*
+
+## Example: Bug Fix (Generic Example)
 
 **Bug:** Empty email accepted
 
