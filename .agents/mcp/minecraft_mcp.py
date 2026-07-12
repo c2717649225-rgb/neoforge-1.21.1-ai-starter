@@ -699,7 +699,52 @@ def send_error(req_id, code, message):
     }
     send_response(resp)
 
+def print_mcp_onboarding():
+    abs_project_path = os.path.abspath(PROJECT_PATH).replace("\\", "/")
+    abs_script_path = os.path.abspath(__file__).replace("\\", "/")
+    
+    border = "=" * 78
+    print(border)
+    print(" [NeoForge 1.21.1 AI Starter] MCP Probe Onboarding Helper")
+    print(border)
+    print(f" Detected project path: {abs_project_path}")
+    print(f" Detected script path:  {abs_script_path}")
+    print(border)
+    print(" Copy the JSON config snippet below to register this server in your client:")
+    print("")
+    print(" For Cline (.vscode/cline_mcp_settings.json) or Roo Code:")
+    print("```json")
+    print(json.dumps({
+        "mcpServers": {
+            "minecraft-mcp": {
+                "command": "python",
+                "args": [
+                    abs_script_path
+                ]
+            }
+        }
+    }, indent=2))
+    print("```")
+    print("")
+    print(" For Cursor (Settings -> Features -> MCP -> Add New MCP Server):")
+    print("  - Name: minecraft-mcp")
+    print("  - Type: command")
+    print(f"  - Command: python \"{abs_script_path}\"")
+    print("")
+    print(" For Claude Code (Run command globally):")
+    print(f"  claude mcp add minecraft-mcp python \"{abs_script_path}\"")
+    print("")
+    print(" For Grok Build / Other stdio MCP Clients:")
+    print(f"  Register command: python \"{abs_script_path}\"")
+    print(border)
+    print(" INSTRUCTION: Copy and paste the corresponding block above into your AI client.")
+    print(border)
+
 def main():
+    if sys.stdin.isatty() or "--help" in sys.argv or "-h" in sys.argv:
+        print_mcp_onboarding()
+        sys.exit(0)
+
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     sys.stdin.reconfigure(encoding='utf-8', errors='replace')
     

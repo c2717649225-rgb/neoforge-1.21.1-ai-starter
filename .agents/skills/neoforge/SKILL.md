@@ -149,6 +149,7 @@ Directly `read` the exact file path below based on your current task (DO NOT cal
 | Advanced decoupling & Concurrency Safeties | `references/architecture_design.md` |
 | Config specs & TOML Reload Listeners | `references/configuration.md` |
 | Mod Access Transformers Configuration | `references/access_transformers.md` |
+| Common Dev Anti-Patterns & Bad vs Good | `references/anti_patterns.md` |
 
 ### 🧱 Block, Item & Loot Customizations
 | Task Category | Target File Path to READ |

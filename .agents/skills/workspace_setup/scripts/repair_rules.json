@@ -1,0 +1,27 @@
+{
+  "rules": [
+    {
+      "id": "static_registry_get",
+      "patterns": [
+        "\\.get\\(",
+        "(?:static|DeferredHolder|DeferredBlock|DeferredItem|Registry not present)"
+      ],
+      "suggestion": "【AI 建议】检测到可能的静态 .get() 调用。请确认原始报错是否为 Registry not present 或静态字段错误，若不符请忽略本建议。"
+    },
+    {
+      "id": "itemstack_nbt_deprecation",
+      "patterns": [
+        "(?:getOrCreateTag|getTag)"
+      ],
+      "suggestion": "【AI 建议】检测到可能的旧版 NBT 操作。请确认是否正在对 ItemStack 进行读写。1.21.1 必须使用 Data Components，建议避免使用 getOrCreateTag 等方法。"
+    },
+    {
+      "id": "streamcodec_composite_limit",
+      "patterns": [
+        "StreamCodec\\.composite"
+      ],
+      "suggestion": "【AI 建议】StreamCodec.composite 最多支持 6 个字段，超过请改用 StreamCodec.of(encoder, decoder)。"
+    }
+  ],
+  "fallback_suggestion": "【AI 提示】未匹配到特化规则。请结合原始编译报错，使用 MCP 工具或文件查看工具进行诊断。"
+}

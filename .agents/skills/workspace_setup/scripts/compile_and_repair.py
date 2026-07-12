@@ -2,8 +2,15 @@ import os
 import sys
 import subprocess
 import re
+import json
+from typing import List, Dict, Any
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
     print("==================================================")
     print("Starting Automated Compilation & Error Diagnostics...")
     print("==================================================")
@@ -77,6 +84,38 @@ def main():
                 print(f"    (Could not load context lines: {ex})")
             print("--------------------------------------------------")
             
+        # ==================================================
+        # 🔌 AI Diagnostic Suggestion Rules (AND-Regex Chain)
+        # ==================================================
+        suggestion_triggered = False
+        rules_path = os.path.join(script_dir, "repair_rules.json")
+        if os.path.exists(rules_path):
+            try:
+                with open(rules_path, "r", encoding="utf-8") as rf:
+                    rules_data: Dict[str, Any] = json.load(rf)
+                
+                rules: List[Dict[str, Any]] = rules_data.get("rules", [])
+                fallback: str = rules_data.get("fallback_suggestion", "")
+                
+                for rule in rules:
+                    patterns: List[str] = rule.get("patterns", [])
+                    suggestion: str = rule.get("suggestion", "")
+                    
+                    # AND-Regex 链条模式：报错全文本必须命中所有的 pattern
+                    if patterns and all(re.search(p, full_output) for p in patterns):
+                        print("\n[AI SUGGESTION]")
+                        print(suggestion)
+                        print("--------------------------------------------------")
+                        suggestion_triggered = True
+                        break # 仅打印第一条匹配中的特化建议，防多重轰炸
+                
+                if not suggestion_triggered and fallback:
+                    print("\n[AI SUGGESTION]")
+                    print(fallback)
+                    print("--------------------------------------------------")
+            except Exception as e:
+                print(f"\n(Failed to run AI diagnostics rules: {e})")
+        
         print("\nCRITICAL INSTRUCTION FOR AI AGENT:")
         print("You MUST fix the above syntax errors immediately using code editing tools.")
         print("After editing, run this compiler repair script again. Repeat this cycle until compile passes.")
