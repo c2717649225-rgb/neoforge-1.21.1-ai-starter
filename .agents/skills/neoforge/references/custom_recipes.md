@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 自定义合成与配方序列化 (Custom Recipes) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 科技模组（如发电机、粉碎机）或魔法模组（如祭坛）通常都需要自定义合成配方类型。在 1.21.1 中，配方系统废弃了旧的方法，**全面采用 Codec（`MapCodec` 和 `StreamCodec`）进行序列化**，并且用泛型的 **`RecipeInput` 接口**取代了旧版的 `Container` 接口。
 
 以下是实现高扩展性、高性能自定义配方的标准范例。

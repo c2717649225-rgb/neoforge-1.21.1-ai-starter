@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 HUD 界面图层 (GUI Layers) 渲染指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 如果模组需要实时展示自定义能量条、宠物状态、虚空之盾或特殊动作条，则需要在屏幕上绘制自定义 HUD 覆盖图层。
 
 在 1.21.1 中，NeoForge **彻底废除了旧版的 `IGuiOverlay` 机制，升级为了全新的 GUI Layers（界面图层）系统**。以下是编写物理安全、坐标自适应的 HUD 图层的开发范例。

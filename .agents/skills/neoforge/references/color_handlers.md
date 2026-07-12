@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 物品与方块动态着色 (Color Handlers) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 开发中，如果需要实现“根据方块所处生物群系动态改变方块颜色（如树叶、草方块）”，或者“根据 ItemStack 中的动态变量（如电能百分比、魔法属性）渲染不同的武器贴图颜色”，最优雅的方式是使用**颜色处理器 (Color Handlers)**。
 
 这避免了为同一种贴图重复绘制几十种颜色的低效手段。

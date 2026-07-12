@@ -128,7 +128,7 @@ Confirm:
 
 ### GREEN - Minimal Code
 
-Write simplest code to pass the test.
+Write simplest code to pass the test. *(例外：无 JUnit/GameTest 自动化测试套件的仓库下不适用。)*
 
 <Good>
 ```typescript
@@ -353,7 +353,7 @@ Can't check all boxes? You skipped TDD. Start over. *(例外：无 JUnit/GameTes
 
 Bug found? Write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
 
-Never fix bugs without a test.
+Never fix bugs without a test. *(例外：在无 JUnit/GameTest 自动化测试套件的仓库下不适用。)*
 
 ## Testing Anti-Patterns
 

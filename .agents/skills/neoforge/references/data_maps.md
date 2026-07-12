@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 数据映射 (Data Maps) 进阶开发指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 1.21 及以上版本中，NeoForge 引入了全新的**数据映射 (Data Maps)** 系统。它允许我们将自定义的数据对象，通过**数据包（JSON 资源）**的形式动态挂载到任何注册表项（如 `Item`、`Block`、`EntityType` 等）上。
 
 这在很大程度上替代了传统“硬编码标签 (Tag)”或“自定义 JSON 文件加载”的方式，提供了一种支持热重载、高度兼容的多模组配置共享方案。

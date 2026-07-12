@@ -1,5 +1,10 @@
 # Minecraft 1.21.1 进度系统与数据生成 (Advancements DataGen) 参考指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 1.21.1 中，进度（Advancement）的底层数据完全走向了数据驱动，并使用全新的 `AdvancementHolder` 代替了旧版的纯 Advancement 容器。
 所有的进度数据必须通过 `AdvancementProvider` 配合 `AdvancementSubProvider` 自动生成为 JSON。
 

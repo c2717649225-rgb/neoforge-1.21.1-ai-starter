@@ -1,5 +1,10 @@
 # Minecraft 1.21.1 Mixin 字节码注入系统参考指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 **Mixin** 是一种在运行时动态修改 Minecraft 原版（或其它依赖模组）已编译类字节码的机制。它是修改游戏原版行为、注入自定义逻辑的必由之路。
 
 在 1.21.1 中，项目采用 **Mojang 官方映射 (Mojang Mappings)**，混淆名与方法名均使用 Mojang 官方命名。
@@ -208,4 +213,3 @@ boolean isTicking = ((MobEntityAccessorInterface) mob).getDoingEntityTick();
 *   **编译报错**：`remap = true target not found` (在重写非原版/扩展接口方法时)
     *   ❌ 错误：对 Forge/NeoForge 扩展的自定义非混淆方法（或者是三方 API）使用默认的 `@Inject`。
     *   ✅ 修正：默认情况下 `@Inject` 的 `remap` 属性为 `true`（要求 AP 去 Mojang 映射表查找其混淆前身）。对于本来就没有混淆的 NeoForge 特有方法，必须显式声明 `@Inject(..., remap = false)`。
-

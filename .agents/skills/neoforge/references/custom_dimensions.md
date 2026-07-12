@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 自定义维度 (Dimensions) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 中，添加类似“下界”、“末地”或全新的冒险维度（如暮色森林），其物理环境和规则的注册已完全由**数据驱动（Data-driven）**的 JSON 接管。
 
 Java 代码现在只负责**注册对应的 ResourceKey（资源键）**，以及执行玩家传送等业务逻辑。

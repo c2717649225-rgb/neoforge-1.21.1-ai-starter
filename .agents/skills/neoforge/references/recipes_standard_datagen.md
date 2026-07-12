@@ -1,5 +1,10 @@
 # Minecraft 1.21.1 标准合成与烹饪配方数据生成 (Recipes DataGen) 参考指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 1.21.1 中，传统的 `FinishedRecipe` 类已被完全移除，数据生成一律使用 **`RecipeOutput`** 作为输出。
 所有的配方生成器必须继承 `RecipeProvider` 并重写 `buildRecipes(RecipeOutput)`。
 

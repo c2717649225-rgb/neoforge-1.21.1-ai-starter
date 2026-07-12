@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 自定义生物实体与 AI 系统指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 中，开发自定义生物实体（Mobs）需要严密处理双端隔离。如果将客户端渲染相关的类（如 `Renderer`、`Model`）直接与服务端的属性或 AI 逻辑写在同一个普通类中，**在联机服务器（Dedicated Server）启动时会直接崩溃**。
 
 本指南提供了最规范的实体注册、属性注入、客户端独立绑定以及高性能 AI 节流设计的标准实现。
@@ -420,5 +425,4 @@ public class ModSyncedEntity extends Monster {
         ```java
         event.registerEntityRenderer(ModEntities.RUBY_GRENADE.get(), ThrownItemRenderer::new);
         ```
-
 

@@ -5,7 +5,7 @@ description: Automatically monitors background tasks (like git downloads, gradle
 
 # Background Task Monitor Skill
 
-This skill provides guidelines and procedures to automatically monitor long-running background tasks launched via `run_command`. It ensures that tasks do not hang indefinitely and that you proactively recover from connection timeouts or permission blocks.
+This skill provides guidelines and procedures to automatically monitor long-running background tasks launched via the shell command execution tool. It ensures that tasks do not hang indefinitely and that you proactively recover from connection timeouts or permission blocks.
 
 ## 1. Trigger Criteria & Mandatory Action
 Whenever you start a background task (e.g., download, git clone, build, compilation) that returns a Task ID, you **MUST** immediately schedule a one-shot check timer using the timer/scheduler tool before ending your turn:

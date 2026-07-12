@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 自定义伤害类型 (Damage Types) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 1.20+ 和 1.21.1 中，伤害类型系统被彻底重构为**数据驱动（Data-driven）**的架构。原有的 `new DamageSource("bleeding")` 构造方法已被**完全移除**。
 
 现在，所有的伤害类型必须通过 **JSON 配置文件**定义，在 Java 代码中声明 `ResourceKey` 进行引用，并利用动态注册表（RegistryAccess）构造伤害源。以下是实现自定义伤害类型（如无视护甲的“流血/真实伤害”）的完整指南。

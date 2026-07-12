@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 物品提示信息 (Tooltips) 与物理防崩指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 中，为物品配置详细的信息提示（Tooltip）是必不可少的。例如：按住 **Shift** 展开详尽的背景介绍或机制说明，按住 **Ctrl** 展开能量、附魔数值指标。
 
 在 1.21.1 中，信息提示方法 `appendHoverText` 的**方法签名发生了彻底改变**。此外，如果在提示中检测按键，若处理不当，会导致**专用服务器加载时直接崩溃**（Server Classloading Crash）。

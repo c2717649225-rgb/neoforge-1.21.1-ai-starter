@@ -1,5 +1,10 @@
 # Minecraft 1.21.1 药水效果、注册与酿造 (Potions & Brewing Recipes) 参考指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 1.21.1 中，药水注册以及酿造配方系统全面接入了现代的数据组件化，并废除了以前的大量硬编码工具类：
 - **废除 PotionUtils**：所有的药水信息提取不再通过 `PotionUtils`，改由 `DataComponents.POTION_CONTENTS` 配合数据组件 `PotionContents` 存取。
 - **酿造配方事件总线现代化**：酿造配方的添加改在 `RegisterBrewingRecipesEvent` 事件中，通过其提供的 `PotionBrewing.Builder` 完成。

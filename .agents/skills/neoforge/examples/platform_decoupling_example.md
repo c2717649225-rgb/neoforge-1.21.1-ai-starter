@@ -1,5 +1,8 @@
 # NeoForge & Fabric 跨平台接口解耦 (ServiceLoader) 范例
 
+> [!NOTE]
+> **可选架构**：本模组工程模板默认是纯 NeoForge 模组，底层推荐采用 Attachment 数据存盘。下方多加载器解耦仅在有跨平台移植至 Fabric 的特殊要求时作为架构设计参考。
+
 如果您规划让模组项目在未来能够以最低的代码修改代价移植至 **Fabric** 平台，必须在通用业务逻辑中**严禁直接调用加载器独有的 API**（例如：在核心逻辑中直接调用 `Level.getCapability()` 获取能量，或者直接触发 NeoForge 的 `PacketDistributor` 发送网络包）。
 
 推荐采用原版和大型模组通用的 **Java 服务加载器 (ServiceLoader) 模式**，将平台相关的独有操作抽象隔离。

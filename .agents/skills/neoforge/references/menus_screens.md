@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 容器与 GUI 屏幕 (Menus & Screens) 参考指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 制作带界面的方块（如自定义熔炉、发电机、储物箱等）涉及**双端通信机制**：
 * **服务端 (Server)**：管理容器逻辑（`AbstractContainerMenu`），负责处理物品槽的数据交互、槽位判定、Shift 点击转移等核心逻辑。
 * **客户端 (Client)**：管理视觉渲染（`AbstractContainerScreen`），负责绘制背景贴图、绘制进度条、处理鼠标交互和渲染 Tooltips。

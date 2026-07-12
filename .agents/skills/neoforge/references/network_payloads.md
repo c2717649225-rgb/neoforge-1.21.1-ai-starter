@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 Networking & Payloads Guide
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 In Minecraft 1.21.1, the network system has been modernized. Custom network packets are represented as **Payloads** implementing `CustomPacketPayload`.
 
 ---
@@ -208,4 +213,3 @@ public record ComplexSyncPayload(ItemStack itemStack, Holder<SoundEvent> soundHo
 *   **编译报错**：`cannot find symbol: method nullable() location: interface ByteBufCodecs`
     *   ❌ 错误：`ByteBufCodecs.nullable()`。
     *   ✅ 修正：1.21.1 中不存在 nullable，可空值统一使用 `ByteBufCodecs::optional`（并在 getter 中转换为 `Optional.ofNullable`，在构造器中用 `.orElse(null)` 解包还原）。
-

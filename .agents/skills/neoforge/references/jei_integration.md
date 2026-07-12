@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 JEI (Just Enough Items) 联动开发指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 当中大型模组（尤其是包含自定义机器与配方的科技/魔法模组）发布时，对接 JEI 几乎是硬性标准。这能让玩家通过按 R 键直接查询机器配方。
 
 在 1.21.1 中，JEI API 全面适配了 **`GuiGraphics` 绘制流** 和 **`IFocusGroup` 焦点筛选**。以下是编写 JEI 兼容插件的完整标准范例。

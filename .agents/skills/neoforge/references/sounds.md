@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 声音系统 (Sounds) 注册与播放指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 几乎所有 Minecraft 模组都需要自定义声音效果（例如：武器挥砍、机器运转、生物低吼、UI 点击）。在 NeoForge 1.21.1 中，声音的开发由 **注册类 (SoundEvent)**、**声音配置表 (sounds.json)** 和 **双端播放 API** 组成。
 
 以下是实现自定义声音的完整标准闭环。

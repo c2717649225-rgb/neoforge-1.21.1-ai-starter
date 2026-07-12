@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 模组配置系统 (Mod Configuration) 开发指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 NeoForge 整合并扩展了原生的 **FML 模组配置系统**，允许我们通过编写 `ModConfigSpec` 构建类型安全、可自动生成、自动校验，并完美支持热重载（Hot-Reloading）的 `.toml` 配置文件。
 
 ---

@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 Event System Guidelines
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 NeoForge uses an event-driven architecture. There are two primary event buses you must use correctly.
 
 ## 1. The Two Event Buses

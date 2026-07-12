@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 自定义流体 (Custom Fluids) 注册与渲染指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 自定义流体是 Minecraft 模组中技术细节最多、环环相扣的系统。注册一个流体，必须打通 **FluidType (流体类型)**、**Source/Flowing Fluids (双端流体实例)**、**LiquidBlock (流体方块)** 和 **BucketItem (桶物品)** 之间的属性关联。
 
 此外，在 1.21.1 中，流体的材质渲染必须使用 NeoForge 的 **`IClientFluidTypeExtensions`** 扩展，直接在流体类型中静态绑定。

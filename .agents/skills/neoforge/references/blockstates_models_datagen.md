@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 材质、模型与掉落表数据生成 (DataGen) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 1.21.1 模组开发中，手写数以百计的方块状态 (BlockState)、方块模型 (Block Model)、物品模型 (Item Model) 以及方块掉落表 (Loot Table) 的 JSON 极其繁琐且极易出错。根据 `AGENTS.md` 规约，**强烈建议使用 NeoForge 的 DataGen 系统自动生成这些资源**。
 
 以下是实现上述所有资源自动生成的完整标准蓝图。

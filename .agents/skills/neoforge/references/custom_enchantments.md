@@ -1,5 +1,10 @@
 # Minecraft 1.21.1 数据驱动附魔 (Custom Enchantments DataGen) 参考指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 1.21 及更高版本中，附魔系统经历了颠覆性的重构：
 - **彻底废除硬编码类**：`Enchantment` 被改为 Java `record`（隐式为 final），不可再被继承。
 - **完全由数据包 (Data Pack) 驱动**：附魔的定义不再通过传统的 `DeferredRegister` 在运行时注册，而是必须在 DataGen 阶段使用 `RegistrySetBuilder` 生成 JSON 文件并打包进游戏数据中。

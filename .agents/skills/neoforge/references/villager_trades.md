@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 村民与流浪商人交易修改指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 为了将模组的自定义道具（例如哨子、信物、特殊装备）自然融入生存探索体验中，除了全局掉落修改器（GLM），最常用的方式就是**将物品加入到村民或流浪商人的交易列表**中。
 
 在 NeoForge 1.21.1 中，我们需要在游戏事件总线上订阅专用事件，并通过 `MerchantOffer` 动态追加交易。

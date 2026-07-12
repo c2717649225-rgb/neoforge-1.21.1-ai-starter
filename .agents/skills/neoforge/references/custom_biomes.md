@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 自定义生物群系 (Biomes) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 1.20+ 和 1.21.1 中，**自定义生物群系 (Biomes)** 同样完全通过数据包下的 **JSON 配置文件**进行定义。
 
 Java 代码只负责在需要引用该群系时定义其 `ResourceKey<Biome>`。

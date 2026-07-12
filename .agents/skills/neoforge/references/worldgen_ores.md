@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 自定义世界生成 (Worldgen) 矿石生成指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 1.20+ 和 1.21.1 中，所有的世界生成（包括矿石、植被、结构）均由**数据驱动（Data-driven）**控制。Java 代码中直接操作生成逻辑的方法已被**彻底废除**。
 
 若要让模组注册的自定义矿石在主世界或下界自然生成，必须配置一套完整的数据 JSON 链条：**Configured Feature (配置特征) -> Placed Feature (放置特征) -> Biome Modifier (群系修改器)**。

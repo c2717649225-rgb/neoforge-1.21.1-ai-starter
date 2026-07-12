@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 方块实体动态渲染 (BlockEntityRenderer) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 模组开发中，有很多静态 JSON 模型无法实现的动态视觉效果。例如：**祭坛（Pedestal）上方缓缓自转并上下浮动的道具、动态转动的齿轮、或者根据能量值伸缩的活塞**。
 
 这些特效需要使用 **`BlockEntityRenderer` (简称 BER)** 在游戏运行中动态计算并绘制。

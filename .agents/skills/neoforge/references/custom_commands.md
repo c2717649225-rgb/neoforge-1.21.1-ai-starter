@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 游戏内自定义指令 (Commands) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在模组开发过程中，注册自定义游戏内指令（Commands）是进行**数据调试、管理员管理、或者触发特定测试动作**最有效的方式。
 
 Minecraft 官方内置了 **Brigadier** 命令行语法解析库。在 1.21.1 中，我们需要在游戏事件总线上监听指令注册事件，并使用 Brigadier 构造出分支指令树。

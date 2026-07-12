@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 全局掉落修改器 (Global Loot Modifiers) 开发指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 当您需要向原版地牢宝箱添加战利品，或者让原版怪物/方块掉落模组自定义物品时，直接覆写原版掉落表 JSON 会与其它模组发生毁灭性的覆盖冲突。
 
 NeoForge 提供了非侵入式的**全局掉落修改器（Global Loot Modifiers，简称 GLM）**机制。它允许我们在不破坏原版文件的提前下，在游戏运行时动态把物品塞入任何掉落表中，实现完美的多模组兼容。

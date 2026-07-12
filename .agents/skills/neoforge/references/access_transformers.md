@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 访问转换器 (Access Transformers) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 模组开发中，如果需要访问、调用或重写原版类（Vanilla Classes）中的 `private` 或 `protected` 字段与方法，最底层、最直接且最高效的方式是使用**访问转换器 (Access Transformers, 简称 AT)**。
 
 访问转换器在游戏启动阶段通过字节码转换，直接将目标字段/方法/类改为 `public` 或移除非 final（`non-final`）限制，从而避免使用开销巨大的 Java 反射。

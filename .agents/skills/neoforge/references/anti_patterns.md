@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 常见开发地雷与反例对照表 (Anti-Patterns)
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 这是一个专门面向 AI 和模组开发者的避坑反例指南。以下 6 个地雷在 1.21.1 中会导致直接编译报错、启动闪退或存档损坏。请对比 Bad 写法与 Good 写法：
 
 ---

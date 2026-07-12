@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 自定义生物模型 (EntityModels) 注册与渲染指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 中，除了使用原版现成的渲染器（如恶魂或僵尸渲染器），模组通常需要为自定义生物（如新宠物、新怪物）设计独特的 3D 几何模型。
 
 从 Minecraft 1.17+ 到 1.21.1，官方采用了 **`HierarchicalModel`** 骨架分级模型体系，取代了传统的 `EntityModel` 直排骨骼。同时，必须在物理客户端使用事件进行骨骼图层定义与绑定注册。

@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 物品动态渲染属性 (ItemProperties) 指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft 中，有些 2D 物品需要根据自身的属性状态动态替换贴图纹理。最经典的例子是：**弓在拉弦时，随着拉力进度（pulling / pull）改变拉开程度贴图；盾牌在格挡（blocking）时展示格挡姿态贴图**。
 
 这需要我们使用客户端的 **`ItemProperties`** 注册浮点数属性属性（Predicates），并在物品模型 JSON 中声明 `overrides` 覆写。

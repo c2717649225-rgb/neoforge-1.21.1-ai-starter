@@ -1,5 +1,10 @@
 # Minecraft 1.21.1 世界全局数据存储 (SavedData) 参考指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
+
+
 在 Minecraft NeoForge 模组开发中，如果需要存储跨维度、全局性、服务器级别的持久化数据（如全局经济系统、任务系统、队伍管理），不适合附加到单个实体或区块上，应当使用 **`SavedData`** 存储机制。
 
 ---

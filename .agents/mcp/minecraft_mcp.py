@@ -96,8 +96,8 @@ def get_source_jars():
                         cache_valid = False
                     else:
                         valid_jars_set = set(valid_jars)
-                        GLOBAL_CLASS_PATHS = {k: v for k, v in data.get("class_paths", {}).items() if k in valid_jars_set}
-                        GLOBAL_ARTIFACT_PATHS = {k: v for k, v in data.get("artifact_paths", {}).items() if k in valid_jars_set}
+                        GLOBAL_CLASS_PATHS = {os.path.normpath(k): v for k, v in data.get("class_paths", {}).items() if os.path.normpath(k) in valid_jars_set}
+                        GLOBAL_ARTIFACT_PATHS = {os.path.normpath(k): v for k, v in data.get("artifact_paths", {}).items() if os.path.normpath(k) in valid_jars_set}
                         return valid_jars
         except Exception as e:
             sys.stderr.write(f"Cache load error: {e}\n")
@@ -395,50 +395,85 @@ def read_file(jar_path, file_path="", start_line=None, end_line=None, show_line_
         return "Security Error: Access denied. The specified jar/file path is outside the allowed directories."
         
     try:
-        if not jar_path.lower().endswith(".jar") and os.path.exists(jar_path):
-            with open(jar_path, 'r', encoding='utf-8', errors='replace') as f:
-                raw_content = f.read()
-        else:
-            jar_path = jar_path.replace('/', os.sep)
-            file_path = file_path.replace('\\', '/').lstrip('/')
-            with zipfile.ZipFile(jar_path, 'r') as z:
-                with z.open(file_path) as f:
-                    raw_content = f.read().decode('utf-8', errors='replace')
-                    
-        lines = raw_content.splitlines()
-        total_lines = len(lines)
         s = max(1, start_line) if start_line is not None else 1
-        e = min(total_lines, end_line) if end_line is not None else total_lines
-        
-        # 🔌 Double-layered anti-blast constraint: 1500 soft cap and 5000 hard cap
         truncated_soft = False
         truncated_hard = False
-        original_s, original_e = s, e
         
+        # Determine range limit
         if start_line is None and end_line is None:
-            if e - s + 1 > 1500:
-                e = s + 1500 - 1
-                truncated_soft = True
+            e = s + 1500 - 1
+            truncated_soft = True
         else:
+            if end_line is not None:
+                e = end_line
+            else:
+                e = s + 5000 - 1
             if e - s + 1 > 5000:
                 e = s + 5000 - 1
                 truncated_hard = True
                 
-        sliced = lines[s-1:e]
+        original_s, original_e = s, e
         output_lines = []
-        for idx, line in enumerate(sliced):
-            current_line_num = s + idx
-            if show_line_numbers:
-                output_lines.append(f"{current_line_num:4d} | {line}")
-            else:
-                output_lines.append(line)
-                
-        header = f"// Sliced from Line {s} to {e} of {total_lines} total lines\n"
-        result_text = header + "\n".join(output_lines)
-        if truncated_soft:
-            result_text += f"\n\n// WARNING: truncated_soft_cap_1500. Content truncated at 1500 lines to save tokens. Please specify start_line and end_line parameters to read the remaining lines (Line {e+1} to {total_lines})."
-        elif truncated_hard:
-            result_text += f"\n\n// WARNING: truncated_hard_cap_5000. Specified range {original_s}..{original_e} exceeded the 5000-line hard limit. Truncated to first 5000 lines (Line {s} to {e})."
+        file_longer = False
+        
+        if not jar_path.lower().endswith(".jar") and os.path.exists(jar_path):
+            with open(jar_path, 'r', encoding='utf-8', errors='replace') as f:
+                # Skip pre-lines
+                for _ in range(s - 1):
+                    if not f.readline():
+                        break
+                # Read target lines
+                for current_line_num in range(s, e + 1):
+                    line = f.readline()
+                    if not line:
+                        break
+                    line_str = line.rstrip('\r\n')
+                    if show_line_numbers:
+                        output_lines.append(f"{current_line_num:4d} | {line_str}")
+                    else:
+                        output_lines.append(line_str)
+                # Check if there is next line without reading all
+                if f.readline():
+                    file_longer = True
+        else:
+            import io
+            jar_path = jar_path.replace('/', os.sep)
+            file_path = file_path.replace('\\', '/').lstrip('/')
+            with zipfile.ZipFile(jar_path, 'r') as z:
+                with z.open(file_path) as raw_stream:
+                    with io.TextIOWrapper(raw_stream, encoding='utf-8', errors='replace') as f:
+                        # Skip pre-lines
+                        for _ in range(s - 1):
+                            if not f.readline():
+                                break
+                        # Read target lines
+                        for current_line_num in range(s, e + 1):
+                            line = f.readline()
+                            if not line:
+                                break
+                            line_str = line.rstrip('\r\n')
+                            if show_line_numbers:
+                                output_lines.append(f"{current_line_num:4d} | {line_str}")
+                            else:
+                                output_lines.append(line_str)
+                        # Check if there is next line without reading all
+                        if f.readline():
+                            file_longer = True
+                            
+        actual_read_count = len(output_lines)
+        if not file_longer:
+            # File fully read without truncation
+            total_lines = s - 1 + actual_read_count
+            header = f"// Sliced from Line {s} to {s - 1 + actual_read_count} of {total_lines} total lines\n"
+            result_text = header + "\n".join(output_lines)
+        else:
+            # File continues beyond range limit
+            header = f"// Sliced from Line {s} to {e} (file longer; total not fully counted)\n"
+            result_text = header + "\n".join(output_lines)
+            if truncated_soft:
+                result_text += f"\n\n// WARNING: truncated_soft_cap_1500. Content truncated at 1500 lines to save tokens. Please specify start_line and end_line parameters to read the remaining lines (Line {e+1} onwards)."
+            elif truncated_hard:
+                result_text += f"\n\n// WARNING: truncated_hard_cap_5000. Specified range exceeded the 5000-line hard limit. Truncated to first 5000 lines (Line {s} to {e})."
         return result_text
     except Exception as e:
         sys.stderr.write(f"Error in read_file: {str(e)}\n")
@@ -933,7 +968,7 @@ def main():
                                 "properties": {
                                     "query": {
                                         "type": "string",
-                                        "description": "The class name or relative path fragment to find"
+                                        "description": "The class name or relative path fragment to find. Matches by basename if query has no slash, or matches full relative path if query contains '/' (e.g. 'entity/LivingEntity')."
                                     },
                                     "scan_all_deps": {
                                         "type": "boolean",
