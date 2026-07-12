@@ -30,7 +30,7 @@ Call the task management tool with Action="status" and TaskId="<TaskId>".
    - If the log output shows no new progress since the last check, or if it is stuck on commands known to block (like raw `git clone` on blocked domains, `git ls-remote`, credential prompts, or downloading from slow CDNs):
      - **It is considered STUCK.** Proceed to **Section 3: Corrective Actions**.
    - If the log output shows active progress (file sizes increasing, files compiling):
-     - Schedule another 60-second timer using `schedule` and stop calling tools.
+      - Schedule another 60-second timer using the timer/scheduler facility and stop calling tools.
 
 ---
 
