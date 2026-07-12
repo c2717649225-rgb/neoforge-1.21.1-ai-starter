@@ -27,3 +27,10 @@ python .agents/mcp/minecraft_mcp.py --help
 *   **通信协议**：JSON-RPC 2.0 over Stdio
 *   **分帧格式**：Newline-delimited JSON (每一行是一个独立的完整 JSON)。本探针目前暂不支持 LSP 规范下的 Content-Length 强制报头分帧。
 *   **适用客户端**：Cursor, Cline, Roo Code, Claude Code, Grok Build 等 stdio MCP 宿主环境。
+
+---
+
+## 🔒 信任边界与安全限制 (Trust Boundary)
+1. **100% 离线安全**：本探针完全在本地运行，绝无任何外网 HTTP 请求或数据向外传输行为，绝对不泄露项目隐私。
+2. **数据读取范围**：本探针对磁盘的读取权限被严格限制在当前项目工程根目录 (`PROJECT_PATH`) 以及 Gradle 用户依赖缓存目录 (`GRADLE_USER_HOME` / `~/.gradle`) 内部，绝对禁止读取其他无关敏感路径。
+3. **运行前提**：建议仅在受信的本地 Minecraft 开发工程中注册启用本 MCP 服务。

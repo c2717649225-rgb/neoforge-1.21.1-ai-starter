@@ -1,5 +1,5 @@
 # ==============================================================================
-# Minecraft MCP Server (v1.5.6)
+# Minecraft MCP Server (v1.0.0)
 # A zero-dependency JSON-RPC over stdio MCP server tailored for Minecraft/NeoForge
 # modding. Provides class searching, source grepping, and AST-less method parsing.
 # ==============================================================================
@@ -15,6 +15,7 @@ import zipfile
 import time
 import re
 
+# ==================== SECTION: GLOBAL CACHE & PATHS ====================
 # Project path is dynamically resolved to two levels up from the script's directory (.agents/mcp/minecraft_mcp.py)
 PROJECT_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", ".."))
 CACHE_FILE = os.path.join(os.path.dirname(__file__), "mcp_jar_cache.json")
@@ -204,6 +205,7 @@ def watch_handshake():
         except:
             pass
 
+# ==================== SECTION: CORE TOOL IMPLEMENTATIONS ====================
 def search_class(query, scan_all_deps=False, max_results=50):
     results = []
     query_lower = query.lower()
@@ -222,8 +224,9 @@ def search_class(query, scan_all_deps=False, max_results=50):
     all_jars = get_source_jars()
     jars = filter_jars(all_jars, scan_all_deps)
     for jar in jars:
-        if jar in GLOBAL_CLASS_PATHS:
-            for name in GLOBAL_CLASS_PATHS[jar]:
+        jar_key = os.path.normpath(jar)
+        if jar_key in GLOBAL_CLASS_PATHS:
+            for name in GLOBAL_CLASS_PATHS[jar_key]:
                 path_match = name.lower() if '/' in query_lower else os.path.basename(name).lower()
                 if query_lower in path_match:
                     results.append({
@@ -768,6 +771,7 @@ def read_latest_crash_report():
         sys.stderr.write(f"Error reading latest crash report: {str(e)}\n")
         return f"Error reading latest crash report: {str(e)}"
 
+# ==================== SECTION: PROTOCOL FRAMEWORK ====================
 def send_response(resp):
     sys.stdout.write(json.dumps(resp, ensure_ascii=False) + "\n")
     sys.stdout.flush()
@@ -910,7 +914,7 @@ def main():
                     },
                     "serverInfo": {
                         "name": "minecraft-mcp",
-                        "version": "1.5.6"
+                        "version": "1.0.0"
                     }
                 }
             }
@@ -923,13 +927,13 @@ def main():
                     "tools": [
                         {
                             "name": "search_class",
-                            "description": "Search for Java/Kotlin class files matching a class name in project or dependencies",
+                            "description": "Search for Java/Kotlin class files matching a class name in project or dependencies. Matches by basename if query has no slash, or matches full relative path if query contains '/' (e.g. 'entity/LivingEntity').",
                             "inputSchema": {
                                 "type": "object",
                                 "properties": {
                                     "query": {
                                         "type": "string",
-                                        "description": "The class name or partial name to find"
+                                        "description": "The class name or relative path fragment to find"
                                     },
                                     "scan_all_deps": {
                                         "type": "boolean",
@@ -1252,6 +1256,7 @@ def main():
             if req_id is not None:
                 send_error(req_id, -32601, f"Method not found: {method}")
 
+# ==================== SECTION: ONBOARDING & HELPER ====================
 if __name__ == "__main__":
     try:
         main()
