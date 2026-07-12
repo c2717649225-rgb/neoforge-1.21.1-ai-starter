@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when implementing any feature or bugfix on projects with active testing suites. In projects lacking JUnit/GameTest infrastructure (like this neoforge starter), compile-and-repair and client smoke testing are the equivalent validation standards.
 ---
 
 # Test-Driven Development (TDD)
@@ -25,6 +25,7 @@ Write the test first. Watch it fail. Write minimal code to pass.
 - Throwaway prototypes
 - Generated code
 - Configuration files
+- Projects without JUnit/GameTest infrastructure (where compile-and-repair + runClient smoke tests are used instead)
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
 
@@ -34,24 +35,11 @@ Thinking "skip TDD just this once"? Stop. That's rationalization.
 
 在 1.21.1 模组开发中，配方、掉落表、模型等 JSON 资源完全由 Java 端的 `DataProvider` 驱动生成。如果测试用例强力依赖这些 JSON 资源环境（如需要读取掉落表方能进行破坏测试）：
 1. **解除死锁规约**：允许且必须在编写具体业务逻辑前，先编写对应物品/方块的 DataGen 注册与 `DataProvider` 声明，运行 `gradlew runData` 生成目标 JSON 资源文件。
-2. **重回 TDD 循环**：生成的物理 JSON 资源仅作为测试的前置脚手架环境。资源落地后，必须立刻重新切回 TDD 红绿循环（写测试 -> 验证测试报错 -> 补全核心业务逻辑代码 -> 编译通过 -> 测试通过）。
-
+2. **重回 TDD 循环**：若项目无 JUnit 测试套件，生成的物理 JSON 资源在 compile 之后，通过冒烟运行验证。
 
 ## The Iron Law
 
-```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
-```
-
-Write code before the test? Delete it. Start over.
-
-**No exceptions:**
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Don't look at it
-- Delete means delete
-
-Implement fresh from tests. Period.
+对于有测试框架的项目，严守 "NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST"。但对于本仓库无 GameTest 测试设施的环境，请优先通过 `python .agents/skills/workspace_setup/scripts/compile_and_repair.py` 自测试及冒烟进行检验，严禁随意删除已有的有用代码。
 
 ## Red-Green-Refactor
 

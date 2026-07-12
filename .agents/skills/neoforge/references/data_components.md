@@ -1,5 +1,9 @@
 # Minecraft 1.21.1 数据组件 (Data Components) 参考指南
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 本参考指南中所有示例代码的 `com.tutorial.tutorialmod` 均为占位。写入前必须根据 `gradle.properties` 的真实 Group ID，并执行 `init_workspace.py` 重构为当前项目的真实命名空间，严禁硬编码提交。
+
 在 Minecraft 1.20.5 及更高版本（包括 1.21.1）中，原有的无结构 NBT 物品数据存储系统被彻底废除，取而代之的是类型安全、经过验证的**数据组件 (Data Components)**。所有物品的数据读写、同步和保存都必须使用该系统。
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: writing-skills
-description: Use when creating new skills, editing existing skills, or verifying skills work before deployment
+description: (Maintainer Only) Use only when creating new skills, editing existing skills, or verifying skills work for the .agents framework itself. Regular mod development does NOT require loading this.
 ---
 
 # Writing Skills

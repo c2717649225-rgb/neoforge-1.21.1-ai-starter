@@ -8,9 +8,9 @@ description: Automatically monitors background tasks (like git downloads, gradle
 This skill provides guidelines and procedures to automatically monitor long-running background tasks launched via `run_command`. It ensures that tasks do not hang indefinitely and that you proactively recover from connection timeouts or permission blocks.
 
 ## 1. Trigger Criteria & Mandatory Action
-Whenever you start a background task (e.g., download, git clone, build, compilation) that returns a `TaskId`, you **MUST** immediately schedule a one-shot check timer using the `schedule` tool before ending your turn:
-- **DurationSeconds**: `60`
-- **Prompt**: `"Check the status of background task <TaskId>"`
+Whenever you start a background task (e.g., download, git clone, build, compilation) that returns a Task ID, you **MUST** immediately schedule a one-shot check timer using the timer/scheduler tool before ending your turn:
+- Set duration to `60` seconds
+- Prompt: `"Check the status of background task <TaskId>"`
 
 ---
 
@@ -18,7 +18,7 @@ Whenever you start a background task (e.g., download, git clone, build, compilat
 When the 60-second timer triggers (or you are woken up by a message), perform the following checks:
 
 ### Step A: Query Task Status
-Call the `manage_task` tool with `Action="status"` and `TaskId="<TaskId>"`.
+Call the task management tool with Action="status" and TaskId="<TaskId>".
 
 ### Step B: Analyze the Task State
 1. **If the task is finished successfully**:
@@ -36,7 +36,7 @@ Call the `manage_task` tool with `Action="status"` and `TaskId="<TaskId>"`.
 
 ## 3. Corrective Actions for Stuck Tasks
 If you determine a task is stuck or failing, you must intervene immediately:
-1. **Kill the Stuck Task**: Call `manage_task` with `Action="kill"`.
+1. **Kill the Stuck Task**: Call the task management tool with Action="kill".
 2. **Determine the Root Cause & Apply Fallbacks**:
    - **Network Timeout / Git Clone Hang**: 
      - Switch to using a fast mirror (e.g., `mirror.ghproxy.com`, `ghproxy.net` or `github.moeyy.xyz`).

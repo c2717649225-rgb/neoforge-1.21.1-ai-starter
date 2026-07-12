@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: "Use when starting Major feature development or core refactoring. Minor/trivial tasks, compilation fixes, and concept Q&A are 100% exempted from brainstorming specs."
 ---
 
 # Brainstorming Ideas Into Designs
@@ -10,12 +10,8 @@ Help turn ideas into fully formed designs and specs through natural collaborativ
 Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+对于 Major 核心开发（新机器、实体、Mixin 注入修改、Packet 网络通信等复杂核心功能），必须在给出 spec 设计并获得用户批准前禁止进入实现。但对于 Minor 业务开发（改配方、新增普通物品/方块、修复编译错、数值微调等），允许免除此门禁直接进行实现。
 </HARD-GATE>
-
-## Anti-Pattern: "This Is Too Simple To Need A Design"
-
-Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
 
 ## Checklist
 

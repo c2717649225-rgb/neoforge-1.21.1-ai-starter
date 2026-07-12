@@ -1,5 +1,9 @@
 # NeoForge 1.21.1 能力系统与数据附加系统 (Capabilities & Data Attachments)
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 本参考指南中所有示例代码的 `com.tutorial.tutorialmod` 均为占位。写入前必须根据 `gradle.properties` 的真实 Group ID，并执行 `init_workspace.py` 重构为当前项目的真实命名空间，严禁硬编码提交。
+
 在 NeoForge 1.21.1 中，传统的 Forge Capability 系统经历了彻底的重构：
 1. **数据附加系统 (Data Attachments)**：专门用于在实体、区块和方块实体上**持久化附加自定义数据**（取代了旧版通过 Capability 保存自定义 NBT 的做法）。
 2. **能力系统 (Capabilities)**：专门用于**在方块、方块实体、实体之间共享功能接口**（如 `IItemHandler` 物品物品栏、`IEnergyStorage` 能量）。旧版的 `LazyOptional` 被完全移除。

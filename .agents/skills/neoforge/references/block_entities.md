@@ -1,5 +1,9 @@
 # NeoForge 1.21.1 Block Entities Guide
 
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 本参考指南中所有示例代码的 `com.tutorial.tutorialmod` 均为占位。写入前必须根据 `gradle.properties` 的真实 Group ID，并执行 `init_workspace.py` 重构为当前项目的真实命名空间，严禁硬编码提交。
+
 In Minecraft 1.21.1, Block Entities (Tile Entities) are used for blocks that require data storage (like chests, machines) or active tick processing (like furnaces).
 
 ---

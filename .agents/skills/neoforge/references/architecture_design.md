@@ -1,6 +1,8 @@
 # 模组通用架构设计蓝图 (Architecture & Design Blueprint)
 
-> 本文档用于定义项目的高维架构和代码设计原则。当需要进行模块重构、代理设计或结构性调整时，开发人员或 AI 应当主动读取本文档。
+> [!WARNING]
+> **⚠️ 示例包名禁原样粘贴**：
+> 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。
 
 ---
 
@@ -40,3 +42,27 @@
    * 多线程或异步场景下，优先使用 `ConcurrentHashMap`、`AtomicInteger`、`CopyOnWriteArrayList`。
 3. **崩溃防御**：
    * 所有内部异常必须被捕获并优雅降级（如打印日志、安全移除实体），绝对禁止导致整个游戏物理客户端或服务端发生崩溃。
+
+---
+
+## 🏛️ 4. 模组分层架构与边界规范 (Decoupling & Bus Authority)
+
+### 1. 物理端侧隔离与 Client/Common 边界 (Client Isolation)
+*   **物理隔离原则**：Minecraft 的专用服务器 (Dedicated Server) 物理缺失 `net.minecraft.client` 命名空间下的所有类。
+*   **注册隔离 (Registration Event)**：所有渲染器注册 (BER)、颜色处理器注册、粒子效果配置、客户端 Screen GUI 必须完全隔离在带 `@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)` 标记的客户端独立类中。
+*   **通用包禁导客户端**：严禁在 common / server 业务包的类（如 Block, Item, BlockEntity 核心类）中直接 import 或引用 `net.minecraft.client`。
+*   **单点跳转**：对客户端的调用一律包裹在 `OnlyIn` 宏或通过平台 Proxy 进行单点跳转。
+
+### 2. 数据权威性与服务端同步 (Server Authority)
+*   **服务端为唯一数据权威 (Server is King)**：所有的生命值、魔法值、能量、物品栏修改，必须完全在服务端进行逻辑结算。
+*   **数据包同步 (Packet Synced)**：当服务端数据发生变化时，通过自定义 Network Payload 向客户端分发同步 Packet。客户端收到 Packet 后仅用于界面显示与客户端视觉特效渲染，严禁在客户端直接修改核心业务数据状态。
+*   **线程隔离**：网络 Payload Handler 默认运行在网络线程，任何涉及修改世界、玩家状态的操作，**必须**包裹在 `context.enqueueWork(...)` 中提交给主线程运行。
+
+### 3. 事件总线归属判定 (MOD Bus vs. GAME Bus)
+*   **MOD 事件总线 (MOD Event Bus)**：
+    *   *作用*：用于游戏初始化、注册（Items, Blocks, Entities, Cap, Packets）、渲染器绑定等静态周期事件。
+    *   *声明*：使用 `@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)`，或监听主类 constructor 中的 `IEventBus`。
+*   **GAME/FORGE 事件总线 (NeoForge Event Bus)**：
+    *   *作用*：用于游戏运行期动态事件（如 PlayerTick, LevelTick, BlockBreakEvent, ItemTooltipEvent）。
+    *   *声明*：使用 `@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)` (NeoForge 默认总线为 GAME，省略 bus 参数即为 GAME)。
+    *   *注意*：切勿混淆总线，否则事件监听器将完全失效！

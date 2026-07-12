@@ -42,7 +42,8 @@ digraph when_to_use {
 **Don't use when:**
 - Failures are related (fix one might fix others)
 - Need to understand full system state
-- Agents would interfere with each other
+- Agents would interfere with each other (e.g. modifying same config files)
+- **Concurrent Workspace Initialization/Renaming**: Parallel agents MUST NEVER concurrently execute global renaming or initialization scripts (`init_workspace.py`). These core structural refactoring tasks must be strictly serialized under a single agent session to prevent race conditions.
 
 ## The Pattern
 

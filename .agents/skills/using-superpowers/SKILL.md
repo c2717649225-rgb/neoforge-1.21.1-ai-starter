@@ -1,6 +1,6 @@
 ---
 name: using-superpowers
-description: Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions
+description: Use when starting Major feature development or refactoring conversations - establishes how to find and use skills, while allowing minor/trivial tasks to bypass brainstorming.
 ---
 
 <SUBAGENT-STOP>
@@ -25,10 +25,10 @@ Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it h
 
 ## Skill Priority
 
-When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.
+Minecraft 模组开发任务中，领域/实现技能具有绝对的最高优先级（1. `neoforge` + `workspace_setup` + `verification` 为一等公民核心必读），其余辅助/过程性技能在 Major 核心设计、多任务或复杂调试时按需调用。
 
-- "Let's build X" → superpowers:brainstorming first, then implementation skills.
-- "Fix this bug" → superpowers:systematic-debugging first, then domain skills.
+- "Let's build a Custom Machine (Major)" -> superpowers:brainstorming first, then implementation skills.
+- "Add a simple Item/Recipe (Minor) or Fix compilation" -> Skip brainstorming/systematic-debugging, load neoforge directly.
 
 ## Red Flags
 
