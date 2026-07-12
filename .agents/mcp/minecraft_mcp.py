@@ -94,13 +94,15 @@ def get_source_jars():
                     if len(cached_jars) > 0 and len(valid_jars) / len(cached_jars) < 0.5:
                         cache_valid = False
                     else:
-                        GLOBAL_CLASS_PATHS = data.get("class_paths", {})
-                        GLOBAL_ARTIFACT_PATHS = data.get("artifact_paths", {})
+                        valid_jars_set = set(valid_jars)
+                        GLOBAL_CLASS_PATHS = {k: v for k, v in data.get("class_paths", {}).items() if k in valid_jars_set}
+                        GLOBAL_ARTIFACT_PATHS = {k: v for k, v in data.get("artifact_paths", {}).items() if k in valid_jars_set}
                         return valid_jars
         except Exception as e:
             sys.stderr.write(f"Cache load error: {e}\n")
-
-    cache_dir = os.path.expanduser("~/.gradle/caches")
+            
+    gradle_home = os.environ.get("GRADLE_USER_HOME")
+    cache_dir = os.path.realpath(os.path.join(gradle_home, "caches")) if gradle_home else os.path.expanduser("~/.gradle/caches")
     jars = []
     subdirs_to_scan = [
         os.path.join(cache_dir, "modules-2", "files-2.1"),
@@ -161,9 +163,9 @@ def filter_jars(jars, scan_all_deps=False):
         return jars
     filtered = []
     
-    # 常用模组/API 白名单特征词，用于在跨模组联调时自动放行其源码包
+    # 常用模组/API 白名单特征词，用于在跨模组联调时自动放行其源码包 (基于 basename 规则匹配)
     mod_keywords = [
-        "minecraft", "neoforge", "forge", "parchment",
+        "minecraft", "neoforge", "parchment",
         "geckolib", "curios", "patchouli", "jei", "rei", "emi",
         "architectury", "cloth-config", "citadel", "pehkui"
     ]
@@ -175,9 +177,10 @@ def filter_jars(jars, scan_all_deps=False):
     
     for jar in jars:
         name = os.path.basename(jar).lower()
-        if any(bk in name for bk in block_keywords):
+        if any(bk in name for bk in block_keywords) or name.startswith("asm-") or re.match(r'^asm-\d', name):
             continue
-        if any(kw in name for kw in mod_keywords):
+        is_whitelisted = any(kw in name for kw in mod_keywords) or name.startswith("forge-")
+        if is_whitelisted:
             filtered.append(jar)
     return filtered
 
@@ -243,10 +246,50 @@ def search_class(query, scan_all_deps=False, max_results=50):
             except Exception as e:
                 sys.stderr.write(f"Failed to scan jar {jar}: {e}\n")
                 continue
+                
+    # 🔌 打分排序时序逻辑
+    def get_score(item):
+        j_name = item.get("jar", "").lower()
+        p_name = item.get("path", "").lower()
+        if j_name == "local workspace project" or item.get("full_jar_path", "").replace('\\', '/').startswith(PROJECT_PATH.replace('\\', '/')):
+            return 3
+        elif "neoforge" in j_name or "minecraft" in j_name or "neoforge" in p_name or "minecraft" in p_name:
+            return 2
+        else:
+            return 1
+            
+    results.sort(key=get_score, reverse=True)
+    
     truncated = False
     if len(results) > max_results:
         results = results[:max_results]
         truncated = True
+        
+    # 🔌 仅对 Top-1 结果附带 suggested_read 结构化传参
+    if len(results) > 0:
+        top_item = results[0]
+        norm_jar = os.path.normpath(top_item["full_jar_path"]).replace('\\', '/')
+        if top_item["jar"] == "Local Workspace Project":
+            top_item["suggested_read"] = {
+                "tool": "read_file",
+                "arguments": {
+                    "jar_path": norm_jar,
+                    "start_line": 1,
+                    "end_line": 200
+                }
+            }
+        else:
+            norm_file = os.path.normpath(top_item["path"]).replace('\\', '/')
+            top_item["suggested_read"] = {
+                "tool": "read_file",
+                "arguments": {
+                    "jar_path": norm_jar,
+                    "file_path": norm_file,
+                    "start_line": 1,
+                    "end_line": 200
+                }
+            }
+            
     return results, len(jars), len(all_jars), truncated
 
 def grep_source(query, max_results=50, scan_all_deps=False):
@@ -364,12 +407,20 @@ def read_file(jar_path, file_path="", start_line=None, end_line=None, show_line_
         s = max(1, start_line) if start_line is not None else 1
         e = min(total_lines, end_line) if end_line is not None else total_lines
         
-        # 🔌 Soft Cap 1500 lines constraint to prevent context window explosion
-        is_truncated = False
-        if e - s + 1 > 1500:
-            e = s + 1500 - 1
-            is_truncated = True
-            
+        # 🔌 Double-layered anti-blast constraint: 1500 soft cap and 5000 hard cap
+        truncated_soft = False
+        truncated_hard = False
+        original_s, original_e = s, e
+        
+        if start_line is None and end_line is None:
+            if e - s + 1 > 1500:
+                e = s + 1500 - 1
+                truncated_soft = True
+        else:
+            if e - s + 1 > 5000:
+                e = s + 5000 - 1
+                truncated_hard = True
+                
         sliced = lines[s-1:e]
         output_lines = []
         for idx, line in enumerate(sliced):
@@ -381,8 +432,10 @@ def read_file(jar_path, file_path="", start_line=None, end_line=None, show_line_
                 
         header = f"// Sliced from Line {s} to {e} of {total_lines} total lines\n"
         result_text = header + "\n".join(output_lines)
-        if is_truncated:
-            result_text += f"\n\n// WARNING: Content truncated at 1500 lines to save tokens. Please specify start_line and end_line parameters to read the remaining lines (Line {e+1} to {total_lines})."
+        if truncated_soft:
+            result_text += f"\n\n// WARNING: truncated_soft_cap_1500. Content truncated at 1500 lines to save tokens. Please specify start_line and end_line parameters to read the remaining lines (Line {e+1} to {total_lines})."
+        elif truncated_hard:
+            result_text += f"\n\n// WARNING: truncated_hard_cap_5000. Specified range {original_s}..{original_e} exceeded the 5000-line hard limit. Truncated to first 5000 lines (Line {s} to {e})."
         return result_text
     except Exception as e:
         sys.stderr.write(f"Error in read_file: {str(e)}\n")
@@ -607,7 +660,8 @@ def list_methods(jar_path, class_path):
                 "methods": methods,
                 "metadata": {
                     "language": "kotlin",
-                    "tip": "Kotlin files use the 'fun' keyword for all function declarations. You can also use grep_source(query='fun ') to list or search functions across the entire project."
+                    "parser": "heuristic",
+                    "tip": "Kotlin files use the 'fun' keyword. This is a heuristic parser, verify complex code via read_file."
                 }
             }
         else:
@@ -615,7 +669,9 @@ def list_methods(jar_path, class_path):
             output = {
                 "methods": methods,
                 "metadata": {
-                    "language": "java"
+                    "language": "java",
+                    "parser": "heuristic",
+                    "tip": "This is a fast regex-heuristic parser. For complex nested classes or signatures, verify with read_file."
                 }
             }
             
@@ -693,16 +749,20 @@ def read_latest_crash_report():
         cleaned_lines = []
         capture = True
         
-        # 截断与清洗：当遇到 "-- System Details --" 时截断后续无关的显卡、系统环境变量等噪音，节约 Token
+        # 🔌 降噪与清洗：过滤无用的系统/硬件细节，但对 Mixins, Transformers, Caused By 段强行保留
         for line in content.splitlines():
             if "-- System Details --" in line:
-                cleaned_lines.append("\n[... System details truncated to save tokens ...]\n")
                 capture = False
+                cleaned_lines.append("\n// --- System Details (Noise filtered: Mixins & Transforms retained) ---")
             if capture:
                 cleaned_lines.append(line)
+            else:
+                line_lower = line.lower()
+                if any(k in line_lower for k in ("mixin", "transform", "caused by", "neoforge", "error", "fail", "conflict")):
+                    if not any(k in line_lower for k in ("operating system:", "cpu:", "jvm flags:", "graphics card:", "memory:")):
+                        cleaned_lines.append(line)
                 
         header = f"// Automatically extracted and cleaned from the latest crash report: {os.path.basename(latest_file)}\n"
-        # 限制最大输出 250 行，保护上下文边界
         return header + "\n".join(cleaned_lines[:250])
     except Exception as e:
         sys.stderr.write(f"Error reading latest crash report: {str(e)}\n")
@@ -805,6 +865,29 @@ def main():
         try:
             req = json.loads(line)
         except Exception:
+            # 🔌 JSON-RPC Parse Error recovery mechanism
+            id_match = re.search(r'"id"\s*:\s*(null|\d+|"[^"]*")', line)
+            if id_match:
+                extracted_id = id_match.group(1).strip()
+                if extracted_id == "null":
+                    continue
+                elif extracted_id.startswith('"') and extracted_id.endswith('"'):
+                    extracted_id = extracted_id[1:-1]
+                else:
+                    try:
+                        extracted_id = int(extracted_id)
+                    except ValueError:
+                        pass
+                
+                resp = {
+                    "jsonrpc": "2.0",
+                    "id": extracted_id,
+                    "error": {
+                        "code": -32700,
+                        "message": "Parse error"
+                    }
+                }
+                send_response(resp)
             continue
             
         method = req.get("method")
@@ -1016,12 +1099,18 @@ def main():
                         "total_dependency_jars": total_count,
                         "truncated": truncated
                     }
+                    ok = True
+                    attention = None
                     if total_count == 0:
+                        ok = False
+                        attention = "WARNING: no_source_jars - No dependency source jars detected in Gradle cache. Please run './gradlew genSources' or compile your project to download sources, then call 'clear_cache' tool to re-index."
                         metadata["no_source_jars"] = True
-                        metadata["diagnostic_warning"] = "WARNING: No dependency source jars detected in Gradle cache. Please run './gradlew genSources' or compile your project to download sources, then call 'clear_cache' tool to re-index."
+                        metadata["diagnostic_warning"] = attention
                     elif scanned_count == 0:
+                        ok = False
+                        attention = "WARNING: filter_excluded_all - All scanned source jars were filtered out by the default neoforge/minecraft whitelist. To search other libraries, please specify scan_all_deps=true."
                         metadata["filter_excluded_all"] = True
-                        metadata["diagnostic_warning"] = "WARNING: All scanned source jars were filtered out by the default neoforge/minecraft whitelist. To search other libraries, please specify scan_all_deps=true."
+                        metadata["diagnostic_warning"] = attention
                     elif len(res) == 0:
                         metadata["no_match"] = True
                         metadata["tip"] = "No matching classes found. Try a different query or set scan_all_deps=true."
@@ -1029,9 +1118,13 @@ def main():
                         metadata["tip"] = "Use scan_all_deps=true to include all dependency jars" if not sad else "Scanned all dependencies"
 
                     output = {
+                        "ok": ok,
                         "results": res,
                         "metadata": metadata
                     }
+                    if attention:
+                        output["attention"] = attention
+                        
                     text = json.dumps(output, indent=2, ensure_ascii=False)
                     send_tool_response(req_id, text)
                 elif name == "grep_source":
@@ -1054,12 +1147,18 @@ def main():
                         "scanned_jars": scanned_count,
                         "total_dependency_jars": total_count,
                     }
+                    ok = True
+                    attention = None
                     if total_count == 0:
+                        ok = False
+                        attention = "WARNING: no_source_jars - No dependency source jars detected in Gradle cache. Please run './gradlew genSources' or compile your project to download sources, then call 'clear_cache' tool to re-index."
                         metadata["no_source_jars"] = True
-                        metadata["diagnostic_warning"] = "WARNING: No dependency source jars detected in Gradle cache. Please run './gradlew genSources' or compile your project to download sources, then call 'clear_cache' tool to re-index."
+                        metadata["diagnostic_warning"] = attention
                     elif scanned_count == 0:
+                        ok = False
+                        attention = "WARNING: filter_excluded_all - All scanned source jars were filtered out by the default neoforge/minecraft whitelist. To search other libraries, please specify scan_all_deps=true."
                         metadata["filter_excluded_all"] = True
-                        metadata["diagnostic_warning"] = "WARNING: All scanned source jars were filtered out by the default neoforge/minecraft whitelist. To search other libraries, please specify scan_all_deps=true."
+                        metadata["diagnostic_warning"] = attention
                     elif len(res) == 0:
                         metadata["no_match"] = True
                         metadata["tip"] = "No matches found. Try a different query or set scan_all_deps=true."
@@ -1067,9 +1166,13 @@ def main():
                         metadata["tip"] = "Use scan_all_deps=true to include all dependency jars" if not sad else "Scanned all dependencies"
 
                     output = {
+                        "ok": ok,
                         "results": res,
                         "metadata": metadata
                     }
+                    if attention:
+                        output["attention"] = attention
+                        
                     text = json.dumps(output, indent=2, ensure_ascii=False)
                     send_tool_response(req_id, text)
                 elif name in ("read_file", "read_class"):
