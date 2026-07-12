@@ -61,18 +61,26 @@ GLOBAL_ARTIFACT_PATHS = {}
 
 def get_source_jars():
     global GLOBAL_CLASS_PATHS, GLOBAL_ARTIFACT_PATHS
-    build_gradle_path = os.path.join(PROJECT_PATH, "build.gradle")
+    watch_files = [
+        os.path.join(PROJECT_PATH, "build.gradle"),
+        os.path.join(PROJECT_PATH, "settings.gradle"),
+        os.path.join(PROJECT_PATH, "settings.gradle.kts"),
+        os.path.join(PROJECT_PATH, "gradle", "libs.versions.toml")
+    ]
     if os.path.exists(CACHE_FILE):
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 
-                # 自适应缓存失效机制：如果项目路径改变，或 build.gradle 的修改时间新于缓存生成时间，则判定缓存失效并重扫
                 cache_valid = data.get("project_path") == PROJECT_PATH
-                if os.path.exists(build_gradle_path):
-                    gradle_mtime = os.path.getmtime(build_gradle_path)
-                    if gradle_mtime > data.get("timestamp", 0):
-                        cache_valid = False
+                cache_timestamp = data.get("timestamp", 0)
+                
+                # 自适应缓存失效机制：如果项目路径改变，或任意依赖定义文件的修改时间新于缓存生成时间，则判定缓存失效并重扫
+                for w_file in watch_files:
+                    if os.path.exists(w_file):
+                        if os.path.getmtime(w_file) > cache_timestamp:
+                            cache_valid = False
+                            break
                 
                 if cache_valid and time.time() - data.get("timestamp", 0) < 86400:
                     GLOBAL_CLASS_PATHS = data.get("class_paths", {})
@@ -185,11 +193,12 @@ def watch_handshake():
 def search_class(query, scan_all_deps=False):
     results = []
     query_lower = query.lower()
-
+    
     local_files = get_local_source_files()
     for lf in local_files:
-        base = os.path.basename(lf).lower()
-        if query_lower in base:
+        rel_path = os.path.relpath(lf, PROJECT_PATH).replace('\\', '/').lower()
+        path_match = rel_path if '/' in query_lower else os.path.basename(lf).lower()
+        if query_lower in path_match:
             results.append({
                 "jar": "Local Workspace Project",
                 "path": os.path.relpath(lf, PROJECT_PATH).replace('\\', '/'),
@@ -201,8 +210,8 @@ def search_class(query, scan_all_deps=False):
     for jar in jars:
         if jar in GLOBAL_CLASS_PATHS:
             for name in GLOBAL_CLASS_PATHS[jar]:
-                base = os.path.basename(name).lower()
-                if query_lower in base:
+                path_match = name.lower() if '/' in query_lower else os.path.basename(name).lower()
+                if query_lower in path_match:
                     results.append({
                         "jar": os.path.basename(jar),
                         "path": name.replace('\\', '/'),
@@ -213,8 +222,8 @@ def search_class(query, scan_all_deps=False):
                 with zipfile.ZipFile(jar, 'r') as z:
                     for name in z.namelist():
                         if name.endswith(".java") or name.endswith(".kt"):
-                            base = os.path.basename(name).lower()
-                            if query_lower in base:
+                            path_match = name.lower() if '/' in query_lower else os.path.basename(name).lower()
+                            if query_lower in path_match:
                                 results.append({
                                     "jar": os.path.basename(jar),
                                     "path": name.replace('\\', '/'),
@@ -229,6 +238,9 @@ def grep_source(query, max_results=50, scan_all_deps=False):
     results = []
     query_lower = query.lower()
     query_pat = re.compile(re.escape(query), re.IGNORECASE)
+    
+    # 线程锁
+    lock = threading.Lock()
     
     # 使用 mutable 包装器确保多线程下数据安全计数
     class Counter:
@@ -266,6 +278,9 @@ def grep_source(query, max_results=50, scan_all_deps=False):
         try:
             with zipfile.ZipFile(jar, 'r') as z:
                 for name in z.namelist():
+                    # 检查是否已超限以提前中止 worker (读取 count 不需要加锁)
+                    if count.val >= max_results:
+                        break
                     if name.endswith(".java") or name.endswith(".kt"):
                         try:
                             content = z.read(name).decode('utf-8', errors='replace')
@@ -303,11 +318,12 @@ def grep_source(query, max_results=50, scan_all_deps=False):
                 break
             try:
                 jar_matches = future.result()
-                for match in jar_matches:
-                    if count.val >= max_results:
-                        break
-                    results.append(match)
-                    count.val += len(match["matches"])
+                with lock:
+                    for match in jar_matches:
+                        if count.val >= max_results:
+                            break
+                        results.append(match)
+                        count.val += len(match["matches"])
             except Exception as e:
                 sys.stderr.write(f"Thread execution failed: {e}\n")
 
@@ -702,6 +718,7 @@ def send_error(req_id, code, message):
 def print_mcp_onboarding():
     abs_project_path = os.path.abspath(PROJECT_PATH).replace("\\", "/")
     abs_script_path = os.path.abspath(__file__).replace("\\", "/")
+    python_exe = sys.executable.replace("\\", "/")
     
     border = "=" * 78
     print(border)
@@ -709,6 +726,7 @@ def print_mcp_onboarding():
     print(border)
     print(f" Detected project path: {abs_project_path}")
     print(f" Detected script path:  {abs_script_path}")
+    print(f" Detected Python exe:   {python_exe}")
     print(border)
     print(" Copy the JSON config snippet below to register this server in your client:")
     print("")
@@ -717,7 +735,7 @@ def print_mcp_onboarding():
     print(json.dumps({
         "mcpServers": {
             "minecraft-mcp": {
-                "command": "python",
+                "command": python_exe,
                 "args": [
                     abs_script_path
                 ]
@@ -729,13 +747,17 @@ def print_mcp_onboarding():
     print(" For Cursor (Settings -> Features -> MCP -> Add New MCP Server):")
     print("  - Name: minecraft-mcp")
     print("  - Type: command")
-    print(f"  - Command: python \"{abs_script_path}\"")
+    print(f"  - Command: \"{python_exe}\" \"{abs_script_path}\"")
     print("")
     print(" For Claude Code (Run command globally):")
-    print(f"  claude mcp add minecraft-mcp python \"{abs_script_path}\"")
+    print(f"  claude mcp add minecraft-mcp \"{python_exe}\" \"{abs_script_path}\"")
     print("")
     print(" For Grok Build / Other stdio MCP Clients:")
-    print(f"  Register command: python \"{abs_script_path}\"")
+    print(f"  Register command: \"{python_exe}\" \"{abs_script_path}\"")
+    print(border)
+    print(" ⚠️ PROTOCOL WARNING:")
+    print(" This server communicates using standard New-line delimited JSON-RPC over stdio.")
+    print(" Ensure your client does NOT strictly enforce Content-Length framing headers.")
     print(border)
     print(" INSTRUCTION: Copy and paste the corresponding block above into your AI client.")
     print(border)
@@ -963,13 +985,19 @@ def main():
                     sad = arguments.get("scan_all_deps", False)
                     if isinstance(sad, str): sad = sad.lower() == "true"
                     res, scanned_count, total_count = search_class(q, sad)
+                    metadata = {
+                        "scanned_jars": scanned_count,
+                        "total_dependency_jars": total_count,
+                    }
+                    if total_count == 0:
+                        metadata["filtered_to_zero"] = True
+                        metadata["diagnostic_warning"] = "WARNING: No dependency source jars detected in Gradle cache. Please run './gradlew genSources' or compile your project to download sources, then call 'clear_cache' tool to re-index."
+                    else:
+                        metadata["tip"] = "Use scan_all_deps=true to include all dependency jars" if not sad else "Scanned all dependencies"
+
                     output = {
                         "results": res,
-                        "metadata": {
-                            "scanned_jars": scanned_count,
-                            "total_dependency_jars": total_count,
-                            "tip": "Use scan_all_deps=true to include all dependency jars" if not sad else "Scanned all dependencies"
-                        }
+                        "metadata": metadata
                     }
                     text = json.dumps(output, indent=2, ensure_ascii=False)
                     send_tool_response(req_id, text)
@@ -988,13 +1016,20 @@ def main():
                     sad = arguments.get("scan_all_deps", False)
                     if isinstance(sad, str): sad = sad.lower() == "true"
                     res, scanned_count, total_count = grep_source(q, mr, sad)
+                    
+                    metadata = {
+                        "scanned_jars": scanned_count,
+                        "total_dependency_jars": total_count,
+                    }
+                    if total_count == 0:
+                        metadata["filtered_to_zero"] = True
+                        metadata["diagnostic_warning"] = "WARNING: No dependency source jars detected in Gradle cache. Please run './gradlew genSources' or compile your project to download sources, then call 'clear_cache' tool to re-index."
+                    else:
+                        metadata["tip"] = "Use scan_all_deps=true to include all dependency jars" if not sad else "Scanned all dependencies"
+
                     output = {
                         "results": res,
-                        "metadata": {
-                            "scanned_jars": scanned_count,
-                            "total_dependency_jars": total_count,
-                            "tip": "Use scan_all_deps=true to include all dependency jars" if not sad else "Scanned all dependencies"
-                        }
+                        "metadata": metadata
                     }
                     text = json.dumps(output, indent=2, ensure_ascii=False)
                     send_tool_response(req_id, text)

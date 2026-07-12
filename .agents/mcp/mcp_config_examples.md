@@ -1,45 +1,29 @@
-# MCP 探针配置示例模板
+# MCP 探针注册权威配置指引
 
-这个文件提供在各大 AI 客户端中手动注册本地 MCP 探针服务（`minecraft_mcp.py`）的静态 JSON 配置模板。
-
----
-
-## 1. Cline / Roo Code / Roo Cline
-在您项目根目录的 `.vscode/cline_mcp_settings.json`（如果没有则新建）中填入：
-
-```json
-{
-  "mcpServers": {
-    "minecraft-mcp": {
-      "command": "python",
-      "args": [
-        "/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py"
-      ]
-    }
-  }
-}
-```
-*(注意：请将 `/ABS/PATH/TO/PROJECT/` 替换为项目实际所在的绝对路径)*
+> [!IMPORTANT]
+> **请勿在此手动复制并填写绝对路径占位符！**
+> 为了防止由于手动拼写或不同操作系统（Windows/Mac/Linux）下的 Python 环境变量冲突导致 MCP 探针拉起失败，请**一律通过运行本地自省脚本获取当前环境的专属注册配置。**
 
 ---
 
-## 2. Cursor (Settings -> Features -> MCP)
-1. 点击 `+ Add New MCP Server`
-2. 填写参数：
-   - **Name**: `minecraft-mcp`
-   - **Type**: `command`
-   - **Command**: `python "/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py"`
+## 🚀 自动生成你的多端配置 (0 门槛复制)
 
----
+请在您的项目根目录下，直接打开终端运行以下指令：
 
-## 3. Claude Code (命令行全局注册)
-在命令行中运行：
 ```bash
-claude mcp add minecraft-mcp python "/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py"
+python .agents/mcp/minecraft_mcp.py --help
 ```
+
+### 🎁 运行后你将获得：
+1. **自动定位并解析的物理绝对路径**
+2. **当前 Python 环境的绝对执行文件路径**（自动替换为 `sys.executable`，彻底防范 Windows 商店广告或 python/python3 找不到的问题）
+3. **Cursor、Cline (Roo Code)、Claude Code、Grok 专用的完美 JSON 配置块**
+
+您可以直接在终端输出的高亮框线中复制配置进行一键贴入！
 
 ---
 
-## 4. Grok Build / 其他兼容客户端
-- **协议**: stdio JSON-RPC
-- **启动指令**: `python "/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py"`
+## ⚠️ 通用协议规范
+*   **通信协议**：JSON-RPC 2.0 over Stdio
+*   **分帧格式**：Newline-delimited JSON (每一行是一个独立的完整 JSON)。本探针目前暂不支持 LSP 规范下的 Content-Length 强制报头分帧。
+*   **适用客户端**：Cursor, Cline, Roo Code, Claude Code, Grok Build 等 stdio MCP 宿主环境。
