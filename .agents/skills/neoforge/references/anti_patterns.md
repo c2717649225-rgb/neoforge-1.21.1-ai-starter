@@ -69,7 +69,7 @@
 *   **痛点**：使用 `@EventBusSubscriber` 静态注解进行类自动订阅时，事件监听方法未声明为 `static`。
 *   **影响**：系统在类加载及事件自动注册时无法对其进行有效绑定，导致对应的事件处理逻辑**静默不触发**。
 
-| ❌ 错误写法 (Bad - 非 static 静态监听) | 🟢 正确写法 (Good - static 静态监听) |
+| ❌ 错误写法 (Bad - 非 static 监听) | 🟢 正确写法 (Good - static 静态监听) |
 | :--- | :--- |
 | ```java<br>// ❌ 监听方法非 static，系统将无法自动注册其订阅监听<br>@EventBusSubscriber(modid = MODID)<br>public class CapabilityRegistrar {<br>  @SubscribeEvent<br>  public void registerCaps(RegisterCapabilitiesEvent event) { ... }<br>}<br>``` | ```java<br>// 🟢 监听方法为 static 静态，系统在类加载时合规自动订阅<br>@EventBusSubscriber(modid = MODID)<br>public class CapabilityRegistrar {<br>  @SubscribeEvent<br>  public static void registerCaps(RegisterCapabilitiesEvent event) { ... }<br>}<br>``` |
 

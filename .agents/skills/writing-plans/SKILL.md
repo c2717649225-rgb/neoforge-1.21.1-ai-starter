@@ -127,7 +127,7 @@ git commit -m "feat: add specific feature"
 
 #### Java/NeoForge MDK Task 示例 (本仓库工程优先使用此骨架)
 
-```markdown
+````markdown
 ### Task N: [Component Name]
 
 **Files:**
@@ -136,7 +136,7 @@ git commit -m "feat: add specific feature"
 
 - [ ] **Step 1: Write the implementation code**
 
-[Insert Java code snippet here]
+[此处粘贴完整 Java 实现（禁止使用 TODO/TBD 等任何占位符，必须写出完整逻辑）]
 
 - [ ] **Step 2: Run Compile & Repair self-test**
 
@@ -157,7 +157,7 @@ Expected: Client launches without registry NPE or crash.
 git add src/main/java/com/tutorial/tutorialmod/...
 git commit -m "feat: add specific feature"
 ```
-```
+````
 
 ## No Placeholders
 
