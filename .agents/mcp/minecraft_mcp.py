@@ -94,7 +94,8 @@ def get_source_jars():
     subdirs_to_scan = [
         os.path.join(cache_dir, "modules-2", "files-2.1"),
         os.path.join(cache_dir, "neoform"),
-        os.path.join(cache_dir, "forge_gradle")
+        os.path.join(cache_dir, "forge_gradle"),
+        os.path.join(PROJECT_PATH, "build", "moddev")
     ]
     for sub in subdirs_to_scan:
         if os.path.exists(sub):
@@ -242,7 +243,7 @@ def grep_source(query, max_results=50, scan_all_deps=False):
     # 线程锁
     lock = threading.Lock()
     
-    # 使用 mutable 包装器确保多线程下数据安全计数
+    # Counter 用于跨线程统计已匹配的结果数（写操作需由 lock 保护）
     class Counter:
         val = 0
     count = Counter()
