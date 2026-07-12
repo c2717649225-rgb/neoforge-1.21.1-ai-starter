@@ -209,6 +209,6 @@ To ensure high-quality delivery, you MUST integrate these local tools during you
    - **Step 1: Locate via Search**: Call `search_class(query="...")` or `grep_source` to locate the class. If the Top-1 result returns `suggested_read`, directly use its `jar_path` and `file_path`.
    - **Step 2: Read Target Range**: Call `read_file` with the extracted paths. For huge classes (e.g. `LivingEntity`), specify `start_line` / `end_line` ranges to avoid the 1500-line soft cap. Max range span is capped at 5000 lines.
    - **Step 3: Quick Scan Methods**: Use `list_methods` to get method signature offsets. Note: This tool uses a regex-heuristic parser (marked as `"parser": "heuristic"`). For nested inner classes or complex syntax, verify details using `read_file`.
-2. **Compile-and-Repair Loop**: Every time you modify or write a Java file, you **MUST** run the 自检脚本 BEFORE presenting changes to the user:
+2. **Compile-and-Repair Loop (编译自检反馈环)**：每次修改或编写 Java 文件后，在向用户呈递变更前，你**必须**优先运行编译自检脚本：
    * **无注册项或 DataGen Provider 变更时**：仅运行 `python .agents/skills/workspace_setup/scripts/compile_and_repair.py`（执行 `compileJava`，退出码 0 即为通过）。
    * **有注册项或 DataGen 相关更新时**：运行 `python .agents/skills/workspace_setup/scripts/compile_and_repair.py --with-data`（串行编译并触发 `runData` 更新 JSON 资源）。

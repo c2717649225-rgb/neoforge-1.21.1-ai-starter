@@ -42,6 +42,19 @@ neoforge-1.21.1-ai-starter/
 
 ---
 
+## 核心 Skills（开发时优先加载）
+
+| Skill | 用途 |
+|-------|------|
+| `neoforge_modding` | 1.21.1 写法、references、MCP 检索剧本、编译门禁 |
+| `workspace_setup` | 改名/初始化（`python .agents/init_workspace.py`） |
+| `verification-before-completion` | 交付前必须有 compile 等证据 |
+
+> [!NOTE]
+> 其余 skills（`brainstorming`、`test-driven-development`、多代理等）为可选过程技能；Minor 任务不必强开。
+
+---
+
 ## 环境要求
 
 - **JDK 21**（`JAVA_HOME` 或 PATH；`java -version` 显示 21）

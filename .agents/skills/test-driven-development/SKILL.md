@@ -338,7 +338,7 @@ Before marking work complete:
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
 
-Can't check all boxes? You skipped TDD. Start over.
+Can't check all boxes? You skipped TDD. Start over. *(例外：无 JUnit/GameTest 的工程，含本 starter：本 Checklist 不适用，无需强行重来。)*
 
 ## When Stuck
 
@@ -370,3 +370,5 @@ Otherwise → not TDD
 ```
 
 No exceptions without your human partner's permission.
+
+*例外：无 JUnit/GameTest 的工程（含本 starter）：本 Final Rule / Checklist 不适用。验证以 compile_and_repair（及按需 --with-data、runClient）为准；禁止为“做 TDD”删除可用业务代码。*

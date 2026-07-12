@@ -21,7 +21,7 @@ This is not negotiable. You cannot rationalize your way out of this.
 
 **Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
 
-**Before entering plan mode:** if you haven't already brainstormed, invoke the brainstorming skill first.
+**Before entering plan mode (or writing implementation plans via writing-plans) for Major features:** if you haven't already brainstormed, invoke the brainstorming skill first. Minor tasks can directly write implementation plans without brainstorming.
 
 Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
 
