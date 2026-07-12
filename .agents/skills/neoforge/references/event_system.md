@@ -57,11 +57,9 @@ public class GameEventHandler {
 }
 ```
 
-In NeoForge 1.21.1+, the `bus` parameter in `@EventBusSubscriber` is **deprecated** (omitted defaults to the Game Bus). The system automatically routes events:
-*   Events implementing **`IModBusEvent`** (e.g. `FMLClientSetupEvent`, `RegisterEvent`, `EntityAttributeCreationEvent`) are automatically routed to the **Mod Bus**.
-*   All other events are routed to the **Game Bus**.
+In NeoForge 1.21.1+, `@EventBusSubscriber` 注解中一律省略 `bus` 参数（不要声明 `bus = Bus.MOD` 或 `bus = Bus.GAME`）。MOD 与 GAME 事件总线的分流路由，将完全由事件类本身是否实现了 `IModBusEvent` 接口自动识别与动态派发。
 
-Therefore, you should omit the `bus` parameter entirely:
+因此，您应当完全省略 `bus` 参数属性：
 
 ```java
 // Mod Bus events are automatically discovered because FMLClientSetupEvent implements IModBusEvent

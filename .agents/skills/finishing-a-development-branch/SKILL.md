@@ -21,7 +21,10 @@ Guide completion of development work by presenting clear options and handling ch
 
 ```bash
 # Run project's test suite
-npm test / cargo test / pytest / go test ./...
+npm test / cargo test / pytest / go test ./... / python .agents/skills/workspace_setup/scripts/compile_and_repair.py
+
+# *注：对于本仓库的 Java/NeoForge MDK 项目，优先运行以下编译自检命令（若动了注册/DataGen 则追加 --with-data）：*
+# python .agents/skills/workspace_setup/scripts/compile_and_repair.py
 ```
 
 **If tests fail:**
@@ -107,7 +110,7 @@ git pull
 git merge <feature-branch>
 
 # Verify tests on merged result
-<test command>
+python .agents/skills/workspace_setup/scripts/compile_and_repair.py
 
 # Only after merge succeeds: cleanup worktree (Step 6), then delete branch
 ```

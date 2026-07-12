@@ -81,6 +81,13 @@ public class ModComponents {
 ```
 
 ### 2.2 复杂对象类型组件注册 (使用 Record 和 Codec)
+
+> [!CAUTION]
+> **⚠️ P0 物理红线：Codec 与 Record 构造参数顺序一致性**
+> 在编写 `RecordCodecBuilder` 时，`Codec` 内部字段声明的顺序（例如 `instance.group(...)` 中字段定义的顺序）必须与 Java `Record` 类的**主构造器中的参数声明顺序 100% 绝对一致**！
+> 任何微小的顺序不一致（如 Codec 里的顺序是 `name -> level`，而 Record 参数顺序是 `level -> name`）都会导致反序列化时抛出 `ClassCastException` 并直接损坏用户的物理存档！
+> 同样地，用于网络传输的 `StreamCodec.composite(...)` 的参数顺序，也必须与 Record 构造器字段声明顺序 100% 绝对一致，且最多支持 6 个参数。对于 7+ 个字段的类，请采用自定义 StreamCodec。
+
 如果要存储包含多个字段的数据，应先编写一个 `Record`：
 
 ```java
@@ -125,9 +132,7 @@ public static final DeferredHolder<DataComponentType<?>, DataComponentType<Owner
 对于复杂的数据对象（例如存储一组生物的属性列表，以及键值对的扩展数据），可使用以下包含列表和 Map 的高级 Record 模板：
 
 > [!CAUTION]
-> **Codec 与 Record 构造器顺序对齐警告 (Read-Write Order Trap)**：
-> 在使用 `RecordCodecBuilder.create(...)` 构造 Codec 时，**在 `instance.group(...)` 中声明的各个字段顺序，必须与 Java Record 类主构造器（Header）中定义的参数声明顺序保持 100% 绝对一致**！
-> 如果顺序出现偏差（例如 Record 中是 `(followers, attributes)`，而 Codec 中先写了 `attributes` 再写 `followers`），代码能正常编译，但游戏在反序列化读档时会由于字段错位调用构造器，直接抛出类型转换异常（`ClassCastException`）导致存档数据损坏或崩溃。
+> **Codec 顺序红线**：同 2.2 节所述，所有字段编解码定义顺序必须与 Record 构造器参数声明保持 100% 绝对一致！
 
 ```java
 package com.tutorial.tutorialmod.component;

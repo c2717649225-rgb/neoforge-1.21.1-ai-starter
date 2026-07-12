@@ -64,11 +64,14 @@
 
 ---
 
-## 6. `@EventBusSubscriber` 漏写总线类型 (EventBus Registration)
+## 6. `@EventBusSubscriber` 监听方法非 static (EventBus Static Subscription)
 
-*   **痛点**：监听 Mod 事件（如 `RegisterCapabilitiesEvent`）时，没有在注解中指定 `bus = Bus.MOD`。
-*   **影响**：NeoForge 默认将其注册到 `GAME` 总线，导致生命周期事件根本不会被调用，Capabilities 注册静默失效。
+*   **痛点**：使用 `@EventBusSubscriber` 静态注解进行类自动订阅时，事件监听方法未声明为 `static`。
+*   **影响**：系统在类加载及事件自动注册时无法对其进行有效绑定，导致对应的事件处理逻辑**静默不触发**。
 
-| ❌ 错误写法 (Bad - 默认 GAME 总线) | 复合/正确写法 (Good - 显式指定 MOD 总线) |
+| ❌ 错误写法 (Bad - 非 static 静态监听) | 🟢 正确写法 (Good - static 静态监听) |
 | :--- | :--- |
-| ```java<br>// ❌ 监听 Mod 总线事件但未声明 Bus.MOD，事件将不会被触发<br>@EventBusSubscriber(modid = MODID)<br>public class CapabilityRegistrar {<br>  @SubscribeEvent<br>  public static void registerCaps(RegisterCapabilitiesEvent event) { ... }<br>}<br>``` | ```java<br>// 🟢 显式指定监听 MOD 事件总线<br>@EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD)<br>public class CapabilityRegistrar {<br>  @SubscribeEvent<br>  public static void registerCaps(RegisterCapabilitiesEvent event) { ... }<br>}<br>``` |
+| ```java<br>// ❌ 监听方法非 static，系统将无法自动注册其订阅监听<br>@EventBusSubscriber(modid = MODID)<br>public class CapabilityRegistrar {<br>  @SubscribeEvent<br>  public void registerCaps(RegisterCapabilitiesEvent event) { ... }<br>}<br>``` | ```java<br>// 🟢 监听方法为 static 静态，系统在类加载时合规自动订阅<br>@EventBusSubscriber(modid = MODID)<br>public class CapabilityRegistrar {<br>  @SubscribeEvent<br>  public static void registerCaps(RegisterCapabilitiesEvent event) { ... }<br>}<br>``` |
+
+> **一律省略 `bus` 说明**：
+> 自 1.21.1 起，`@EventBusSubscriber` 的 `bus` 参数属性一律省略。系统会在底层根据事件参数类是否实现了 `IModBusEvent` 接口，自动判定并分流路由到对应的 Mod 或 Game 事件总线上；但注解下的订阅监听方法本身，**必须 100% 声明为 `static` 静态方法**，否则无法自动注册。

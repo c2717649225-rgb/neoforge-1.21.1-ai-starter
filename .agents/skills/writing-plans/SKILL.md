@@ -125,6 +125,40 @@ git commit -m "feat: add specific feature"
 ```
 ````
 
+#### Java/NeoForge MDK Task 示例 (本仓库工程优先使用此骨架)
+
+```markdown
+### Task N: [Component Name]
+
+**Files:**
+- Create: `src/main/java/com/tutorial/tutorialmod/registry/ModItems.java`
+- Modify: `src/main/java/com/tutorial/tutorialmod/TutorialMod.java`
+
+- [ ] **Step 1: Write the implementation code**
+
+[Insert Java code snippet here]
+
+- [ ] **Step 2: Run Compile & Repair self-test**
+
+Run: `python .agents/skills/workspace_setup/scripts/compile_and_repair.py`
+Expected: SUCCESS (exit 0)
+
+*注：若本步骤涉及注册项变更或 DataGen Provider 更改，必须运行以下命令生成资源：*
+`python .agents/skills/workspace_setup/scripts/compile_and_repair.py --with-data`
+
+- [ ] **Step 3: Optional runClient smoke test**
+
+Run: `./gradlew runClient`
+Expected: Client launches without registry NPE or crash.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/main/java/com/tutorial/tutorialmod/...
+git commit -m "feat: add specific feature"
+```
+```
+
 ## No Placeholders
 
 Every step must contain the actual content an engineer needs. These are **plan failures** — never write them:

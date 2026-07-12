@@ -49,7 +49,7 @@
 
 ### 1. 物理端侧隔离与 Client/Common 边界 (Client Isolation)
 *   **物理隔离原则**：Minecraft 的专用服务器 (Dedicated Server) 物理缺失 `net.minecraft.client` 命名空间下的所有类。
-*   **注册隔离 (Registration Event)**：所有渲染器注册 (BER)、颜色处理器注册、粒子效果配置、客户端 Screen GUI 必须完全隔离在带 `@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)` 标记的客户端独立类中。
+*   **注册隔离 (Registration Event)**：所有渲染器注册 (BER)、颜色处理器注册、粒子效果配置、客户端 Screen GUI 必须完全隔离在带 `@EventBusSubscriber(value = Dist.CLIENT)` 标记的客户端独立类中。
 *   **通用包禁导客户端**：严禁在 common / server 业务包的类（如 Block, Item, BlockEntity 核心类）中直接 import 或引用 `net.minecraft.client`。
 *   **单点跳转**：对客户端的调用一律包裹在 `OnlyIn` 宏或通过平台 Proxy 进行单点跳转。
 
@@ -58,11 +58,9 @@
 *   **数据包同步 (Packet Synced)**：当服务端数据发生变化时，通过自定义 Network Payload 向客户端分发同步 Packet。客户端收到 Packet 后仅用于界面显示与客户端视觉特效渲染，严禁在客户端直接修改核心业务数据状态。
 *   **线程隔离**：网络 Payload Handler 默认运行在网络线程，任何涉及修改世界、玩家状态的操作，**必须**包裹在 `context.enqueueWork(...)` 中提交给主线程运行。
 
-### 3. 事件总线归属判定 (MOD Bus vs. GAME Bus)
-*   **MOD 事件总线 (MOD Event Bus)**：
-    *   *作用*：用于游戏初始化、注册（Items, Blocks, Entities, Cap, Packets）、渲染器绑定等静态周期事件。
-    *   *声明*：使用 `@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)`，或监听主类 constructor 中的 `IEventBus`。
-*   **GAME/FORGE 事件总线 (NeoForge Event Bus)**：
-    *   *作用*：用于游戏运行期动态事件（如 PlayerTick, LevelTick, BlockBreakEvent, ItemTooltipEvent）。
-    *   *声明*：使用 `@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)` (NeoForge 默认总线为 GAME，省略 bus 参数即为 GAME)。
-    *   *注意*：切勿混淆总线，否则事件监听器将完全失效！
+### 3. 事件总线归属判定与静态订阅规范 (Event Routing & Bus Authority)
+*   **MOD/GAME 自动路由判定**：
+    *   在 NeoForge 中，静态注解 `@EventBusSubscriber` **一律省略 `bus` 参数**。系统会根据事件参数类是否实现了 `IModBusEvent` 接口，在底层自动将该静态监听器路由分流至 **Mod 事件总线** 或 **Game 事件总线**。
+    *   **Mod 总线事件**：FMLCommonSetupEvent、RegisterEvent、RegisterCapabilitiesEvent、EntityAttributeCreationEvent 等静态生命周期事件。
+    *   **Game 总线事件**：PlayerTickEvent、LevelTickEvent、BlockEvent.BreakEvent 等游戏运行期事件。
+    *   *注意*：如果采用手动监听模式，仍需在主类构造函数中显式对 `modEventBus.addListener(...)` 或 `NeoForge.EVENT_BUS.addListener(...)` 写入，此时须严加区分。
