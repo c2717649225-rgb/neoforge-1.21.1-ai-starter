@@ -116,6 +116,9 @@ if [ -f pyproject.toml ]; then poetry install; fi
 
 # Go
 if [ -f go.mod ]; then go mod download; fi
+
+# Gradle (Java/NeoForge MDK)
+if [ -f gradlew ]; then ./gradlew compileJava; fi
 ```
 
 ## Step 3: Verify Clean Baseline
@@ -124,7 +127,7 @@ Run tests to ensure workspace starts clean:
 
 ```bash
 # Use project-appropriate command
-npm test / cargo test / pytest / go test ./...
+npm test / cargo test / pytest / go test ./... / python .agents/skills/workspace_setup/scripts/compile_and_repair.py
 ```
 
 **If tests fail:** Report failures, ask whether to proceed or investigate.

@@ -56,6 +56,7 @@ You MUST complete each phase before proceeding to the next.
    - They often contain the exact solution
    - Read stack traces completely
    - Note line numbers, file paths, error codes
+   - **Minecraft/NeoForge 启动或运行时崩溃**：优先查看根目录 `run/logs/latest.log` 或读取 `.minecraft/crash-reports/` 中的最新崩溃报告。使用 `read_latest_crash_report` 工具分析 Mixin 织入故障或 ASM 字节码冲突，绝对不要盲猜底层 root cause。
 
 2. **Reproduce Consistently**
    - Can you trigger it reliably?

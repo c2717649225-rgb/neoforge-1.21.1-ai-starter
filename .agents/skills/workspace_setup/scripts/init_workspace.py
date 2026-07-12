@@ -115,7 +115,7 @@ def main():
         # 查找 data/ 下的非法或过期目录名（不等于当前 mod_id 的那个，如 examplemod）
         subdirs = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
         for sub in subdirs:
-            if sub != mod_id and (sub == "examplemod" or "example" in sub):
+            if sub != mod_id and sub not in ("minecraft", "c"):
                 old_path = os.path.join(data_dir, sub)
                 new_path = os.path.join(data_dir, mod_id)
                 if os.path.exists(new_path):
