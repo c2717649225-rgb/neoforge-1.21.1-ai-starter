@@ -23,6 +23,10 @@ SAFE_PREFIXES = [
     os.path.realpath(os.path.expanduser("~/.gradle")),
     os.path.realpath(PROJECT_PATH)
 ]
+gradle_user_home = os.environ.get("GRADLE_USER_HOME")
+if gradle_user_home:
+    SAFE_PREFIXES.append(os.path.realpath(gradle_user_home))
+
 if os.name == 'nt':
     SAFE_PREFIXES = [p.lower() for p in SAFE_PREFIXES]
 
@@ -83,9 +87,16 @@ def get_source_jars():
                             break
                 
                 if cache_valid and time.time() - data.get("timestamp", 0) < 86400:
-                    GLOBAL_CLASS_PATHS = data.get("class_paths", {})
-                    GLOBAL_ARTIFACT_PATHS = data.get("artifact_paths", {})
-                    return data.get("jars", [])
+                    cached_jars = data.get("jars", [])
+                    valid_jars = [j for j in cached_jars if os.path.isfile(j)]
+                    
+                    # 降级重构自愈：如果丢包率过半（说明用户重写或清空了依赖），强制重新扫描
+                    if len(cached_jars) > 0 and len(valid_jars) / len(cached_jars) < 0.5:
+                        cache_valid = False
+                    else:
+                        GLOBAL_CLASS_PATHS = data.get("class_paths", {})
+                        GLOBAL_ARTIFACT_PATHS = data.get("artifact_paths", {})
+                        return valid_jars
         except Exception as e:
             sys.stderr.write(f"Cache load error: {e}\n")
 
@@ -157,9 +168,8 @@ def filter_jars(jars, scan_all_deps=False):
         "architectury", "cloth-config", "citadel", "pehkui"
     ]
     
-    # 必须拦截的底层臃肿依赖包特征词，防止污染搜索
     block_keywords = [
-        "netty", "guava", "gson", "log4j", "slf4j", "commons-", "asm",
+        "netty", "guava", "gson", "log4j", "slf4j", "commons-", "ow2.asm", "objectweb.asm",
         "jackson", "httpclient", "jna", "lwjgl", "icu4j", "fastutil"
     ]
     
@@ -191,7 +201,7 @@ def watch_handshake():
         except:
             pass
 
-def search_class(query, scan_all_deps=False):
+def search_class(query, scan_all_deps=False, max_results=50):
     results = []
     query_lower = query.lower()
     
@@ -233,7 +243,11 @@ def search_class(query, scan_all_deps=False):
             except Exception as e:
                 sys.stderr.write(f"Failed to scan jar {jar}: {e}\n")
                 continue
-    return results, len(jars), len(all_jars)
+    truncated = False
+    if len(results) > max_results:
+        results = results[:max_results]
+        truncated = True
+    return results, len(jars), len(all_jars), truncated
 
 def grep_source(query, max_results=50, scan_all_deps=False):
     results = []
@@ -350,6 +364,12 @@ def read_file(jar_path, file_path="", start_line=None, end_line=None, show_line_
         s = max(1, start_line) if start_line is not None else 1
         e = min(total_lines, end_line) if end_line is not None else total_lines
         
+        # 🔌 Soft Cap 1500 lines constraint to prevent context window explosion
+        is_truncated = False
+        if e - s + 1 > 1500:
+            e = s + 1500 - 1
+            is_truncated = True
+            
         sliced = lines[s-1:e]
         output_lines = []
         for idx, line in enumerate(sliced):
@@ -360,7 +380,10 @@ def read_file(jar_path, file_path="", start_line=None, end_line=None, show_line_
                 output_lines.append(line)
                 
         header = f"// Sliced from Line {s} to {e} of {total_lines} total lines\n"
-        return header + "\n".join(output_lines)
+        result_text = header + "\n".join(output_lines)
+        if is_truncated:
+            result_text += f"\n\n// WARNING: Content truncated at 1500 lines to save tokens. Please specify start_line and end_line parameters to read the remaining lines (Line {e+1} to {total_lines})."
+        return result_text
     except Exception as e:
         sys.stderr.write(f"Error in read_file: {str(e)}\n")
         return f"Error reading file: {str(e)}"
@@ -614,6 +637,7 @@ def clear_cache():
 def search_artifact(query, extension=None):
     results = []
     query_lower = query.lower()
+    get_source_jars()
     
     # 搜索本地 resources 目录
     resources_dir = os.path.join(PROJECT_PATH, "src", "main", "resources")
@@ -916,7 +940,7 @@ def main():
                         },
                         {
                             "name": "list_methods",
-                            "description": "List all methods declared inside a class file with starting line numbers",
+                            "description": "List all methods declared inside a class file with starting line numbers. Note: This is a fast regex-heuristic parser. For complex nested classes, verify with read_file.",
                             "inputSchema": {
                                 "type": "object",
                                 "properties": {
@@ -985,14 +1009,22 @@ def main():
                         q = str(q)
                     sad = arguments.get("scan_all_deps", False)
                     if isinstance(sad, str): sad = sad.lower() == "true"
-                    res, scanned_count, total_count = search_class(q, sad)
+                    res, scanned_count, total_count, truncated = search_class(q, sad)
+                    
                     metadata = {
                         "scanned_jars": scanned_count,
                         "total_dependency_jars": total_count,
+                        "truncated": truncated
                     }
                     if total_count == 0:
-                        metadata["filtered_to_zero"] = True
+                        metadata["no_source_jars"] = True
                         metadata["diagnostic_warning"] = "WARNING: No dependency source jars detected in Gradle cache. Please run './gradlew genSources' or compile your project to download sources, then call 'clear_cache' tool to re-index."
+                    elif scanned_count == 0:
+                        metadata["filter_excluded_all"] = True
+                        metadata["diagnostic_warning"] = "WARNING: All scanned source jars were filtered out by the default neoforge/minecraft whitelist. To search other libraries, please specify scan_all_deps=true."
+                    elif len(res) == 0:
+                        metadata["no_match"] = True
+                        metadata["tip"] = "No matching classes found. Try a different query or set scan_all_deps=true."
                     else:
                         metadata["tip"] = "Use scan_all_deps=true to include all dependency jars" if not sad else "Scanned all dependencies"
 
@@ -1023,8 +1055,14 @@ def main():
                         "total_dependency_jars": total_count,
                     }
                     if total_count == 0:
-                        metadata["filtered_to_zero"] = True
+                        metadata["no_source_jars"] = True
                         metadata["diagnostic_warning"] = "WARNING: No dependency source jars detected in Gradle cache. Please run './gradlew genSources' or compile your project to download sources, then call 'clear_cache' tool to re-index."
+                    elif scanned_count == 0:
+                        metadata["filter_excluded_all"] = True
+                        metadata["diagnostic_warning"] = "WARNING: All scanned source jars were filtered out by the default neoforge/minecraft whitelist. To search other libraries, please specify scan_all_deps=true."
+                    elif len(res) == 0:
+                        metadata["no_match"] = True
+                        metadata["tip"] = "No matches found. Try a different query or set scan_all_deps=true."
                     else:
                         metadata["tip"] = "Use scan_all_deps=true to include all dependency jars" if not sad else "Scanned all dependencies"
 
