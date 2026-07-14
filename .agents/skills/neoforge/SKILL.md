@@ -13,7 +13,7 @@ description: >
 ## 📖 1. 阅读与交付纪律 (MANDATORY)
 
 ### 阅读规则
-1. 先阅读并严格遵守本文件底部的「物理硬红线」与「验证」两节。
+1. 先阅读并严格遵守本文件「2. 🚨 1.21.1 物理硬红线与 Pre-emptive 避坑指南」与第 1 节「写码后验证」两部分内容。
 2. 根据任务在「3. 索引导航」中寻找对应专题：**首先只阅读 1 个** reference 专题文件。
 3. 仅当仍缺失必要 API 或有额外关联逻辑时，再阅读 **第 2 个** 专题文件。
 4. **绝对禁止**一次性打开 3 个及以上的 references 专题文件，严禁为追求“全面”而通读整个目录。
@@ -34,6 +34,7 @@ description: >
 *   **网络 Payload 线程安全**：Handler 默认运行在网络线程，任何涉及修改世界、玩家状态的操作必须包裹在 `context.enqueueWork(...)` 中提交给主线程。
 *   **延迟解包安全**：类静态成员或静态初始化块（static block）中，**绝对禁止直接对注册项调用 `.get()`**（必须延迟在运行期或事件监听中访问）。
 *   **事件总线订阅口径对齐**：使用 `@EventBusSubscriber` 订阅时**一律省略 bus 属性**（由 IModBusEvent 等事件类基类自动路由），且监听方法必须是 **static** 方法。细节规范请按需阅读 [references/event_system.md](references/event_system.md)。
+*   **StreamCodec 字段及容量限制**：`StreamCodec.composite` 最多只支持 6 个字段。当字段达到 7 个及以上时，必须手动使用 `StreamCodec.of(encoder, decoder)` 进行声明。在网络同步中传输 `ItemStack` 时，StreamCodec 的泛型必须声明为 `net.minecraft.network.RegistryFriendlyByteBuf` 而非 `ByteBuf`。
 
 ### 💡 占位符自适应规则
 下列 references 专题与骨架文档中的 `{{MOD_GROUP}}`、`{{MODID}}`、`{{MAIN_CLASS}}` 均为符号占位符。在写入代码前，必须先从 `gradle.properties` 和 `neoforge.mods.toml` 读取真实的包路径与 Mod ID 进行符号替换，严禁机械化复制。
@@ -54,6 +55,7 @@ description: >
 | NBT 替代与自定义数据组件 (Data Components) | [references/data_components.md](references/data_components.md) |
 | BlockEntity 物品栏、能力接口 (Capability) 与 Attachments | [references/capabilities_attachments.md](references/capabilities_attachments.md) |
 | BlockEntity 基础、网络同步与 BlockState 保存 | [references/block_entities.md](references/block_entities.md) |
+| 高维架构设计、模组间解耦与并发安全机制 | [references/architecture_design.md](references/architecture_design.md) |
 | 容器 GUI 菜单、屏幕 (Menus, Screens) | [references/menus_screens.md](references/menus_screens.md) |
 | 配置文件 (Config specs) 与 TOML 重载监听 | [references/configuration.md](references/configuration.md) |
 | 模组访问转换器 (Access Transformers) 配置 | [references/access_transformers.md](references/access_transformers.md) |
@@ -106,3 +108,11 @@ description: >
 | 掉落物、状态与方块模型 DataGen 案例 | [examples/datagen_example.md](examples/datagen_example.md) |
 | 合成配方、物品 Tags 标签 DataGen 案例 | [examples/recipes_tags_example.md](examples/recipes_tags_example.md) |
 | 多端发布平台解耦架构 (Platform Decoupling) | [examples/platform_decoupling_example.md](examples/platform_decoupling_example.md) |
+
+---
+
+## 🛠️ 5. MCP 探针调用简要三步指南 (READ ONLY)
+当需要快速阅读或反查 Minecraft 源码或 NeoForge 依赖源码时：
+1. **检索定位**：调用 `search_class` 或者是 `grep_source` 定位特定名称或引用（若返回 suggested_read 则直接读取 suggested_read 下的真源码绝对路径）。
+2. **偏移导航**：对大型类（如 `LivingEntity`），调用 `list_methods` 快速查明方法签名偏移行号。
+3. **范围读取**：调用 `read_file` 传入真源码绝对路径并配置 `start_line` / `end_line` 读取代码（避开 1500 行软上限限制）。
