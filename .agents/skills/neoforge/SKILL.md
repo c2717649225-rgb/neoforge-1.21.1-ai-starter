@@ -1,214 +1,108 @@
 ---
 name: neoforge_modding
-description: Expert Minecraft Java 1.21.1 NeoForge modding. Provides Registries, DataComponents, Attachments, Ticking BlockEntities, Capabilities, Network Payloads, Mixins, and Compile Repair.
+description: >
+  Minecraft 1.21.1 NeoForge 模组实现。在编写/修改 Java 注册、组件、方块实体、
+  网络、客户端渲染、DataGen 等时使用。先读本文件红线与阅读规则，按需只打开
+  1～2 个 references 专题文档。不要通读整个 references 目录。
 ---
 
 # NeoForge 1.21.1 Modding Core Engine
 
-Whenever implementing features or resolving bugs, you MUST strictly follow this guide, copy the standard skeletons below, and complete the validation loop.
+---
+
+## 📖 1. 阅读与交付纪律 (MANDATORY)
+
+### 阅读规则
+1. 先阅读并严格遵守本文件底部的「物理硬红线」与「验证」两节。
+2. 根据任务在「3. 索引导航」中寻找对应专题：**首先只阅读 1 个** reference 专题文件。
+3. 仅当仍缺失必要 API 或有额外关联逻辑时，再阅读 **第 2 个** 专题文件。
+4. **绝对禁止**一次性打开 3 个及以上的 references 专题文件，严禁为追求“全面”而通读整个目录。
+5. `examples/` 示例目录与 `references/quick_skeletons.md` 骨架文件同样计入「第 1 或第 2 个」限额配额。
+
+### 写码后验证
+* 编写/修改 Java 源码后，向用户汇报前必须运行：`python .agents/skills/workspace_setup/scripts/compile_and_repair.py` (编译通过即为通过)
+* 涉及 DeferredRegister 注册项或 DataGen 更新时，必须加上 `--with-data` 参数同步生成 JSON 资源文件。
+* 项目元数据绝对以项目根目录的 `gradle.properties` 与 `neoforge.mods.toml` 为唯一真事实源，严禁强行硬编码 Mod ID 或包名。
 
 ---
 
-## 🚨 1. 1.21.1 Core Development Constraints (Pre-emptive Defenses)
+## 🚨 2. 1.21.1 物理硬红线与 Pre-emptive 避坑指南
 
-| 1.20.4 and Before (DEPRECATED) | 1.21.1 NeoForge Standard (MANDATORY) | Impact of Violation |
-| :--- | :--- | :--- |
-| `stack.getOrCreateTag()`, `getTag()` | `stack.getOrDefault(DataComponents.CUSTOM_DATA, ...)` | **Compile Error** / NPE |
-| `stack.setHoverName(name)` | `stack.set(DataComponents.CUSTOM_NAME, name)` | **Compile Error** |
-| `PotionUtils.getPotion(stack)` | `stack.get(DataComponents.POTION_CONTENTS)` | **Compile Error** |
-| `new AttributeModifier(UUID, ...)` | `new AttributeModifier(ResourceLocation, ...)` | **Compile Error** |
-| `DeferredRegister.create(DATA_COMP...)`| `DeferredRegister.createDataComponents(...)` | **Compile Error** |
-| `bus = Bus.MOD` on `@EventBusSubscriber` | Omit `bus`. Autorouted by event class | Deprecation Warning |
-| `enchantable(int)` in properties | Removed. Managed via Data-driven datapacks | **Compile Error** |
-| Static `.get()` in class init | Lazy wrap inside `Supplier` or method call | Bound registry NPE |
-| 手写 JSON in resources | 100% DataGen in `src/main/java` (例外见 AGENTS.md) | Missing textures / Black blocks |
+*   **ItemStack NBT 物理禁用**：绝对禁止混用 1.20.x 的 NBT 读写（如 `getOrCreateTag()`）。必须 100% 使用类型安全的 Data Components 框架。
+*   **Record Codec 顺序绝对对齐**：在 `RecordCodecBuilder.create` 中字段声明顺序必须与 Java Record 主构造器中的参数顺序 **100% 绝对一致**，否则会导致 ClassCastException 游戏崩档。
+*   **物理客户端隔离**：所有 Renderer、Model、Screen 等 client 类必须隔离在专属包名下。通用逻辑绝对禁止直接引用 client 包。
+*   **网络 Payload 线程安全**：Handler 默认运行在网络线程，任何涉及修改世界、玩家状态的操作必须包裹在 `context.enqueueWork(...)` 中提交给主线程。
+*   **延迟解包安全**：类静态成员或静态初始化块（static block）中，**绝对禁止直接对注册项调用 `.get()`**（必须延迟在运行期或事件监听中访问）。
+*   **事件总线订阅口径对齐**：使用 `@EventBusSubscriber` 订阅时**一律省略 bus 属性**（由 IModBusEvent 等事件类基类自动路由），且监听方法必须是 **static** 方法。细节规范请按需阅读 [references/event_system.md](references/event_system.md)。
 
-*   **Codec Sequence Rule**: Field order in `RecordCodecBuilder.create` MUST match the record constructor parameter order exactly. A mismatch causes silent save corruption.
-*   **StreamCodec Limit**: `StreamCodec.composite` supports up to 6 fields. For 7+ fields, you MUST use `StreamCodec.of(encoder, decoder)` manually.
-*   **Network Buffers**: When syncing `ItemStack`, you MUST declare `StreamCodec<RegistryFriendlyByteBuf, T>`, not `ByteBuf`. Use `ItemStack.LIST_STREAM_CODEC` for lists.
-*   **Physical Client Isolation**: Classes referencing `net.minecraft.client` MUST be isolated under `.client` package and marked with `@EventBusSubscriber(value = Dist.CLIENT)`. NEVER import `net.minecraft.client` in common classes (Server crash).
-*   **Datapack Registry Reference**: Datapack-driven registries (e.g. Enchantments, ConfiguredFeatures) CANNOT be registered via Java `DeferredRegister`. You MUST reference them using `ResourceKey` (e.g. `ResourceKey.create(Registries.ENCHANTMENT, ...)`).
+### 💡 占位符自适应规则
+下列 references 专题与骨架文档中的 `{{MOD_GROUP}}`、`{{MODID}}`、`{{MAIN_CLASS}}` 均为符号占位符。在写入代码前，必须先从 `gradle.properties` 和 `neoforge.mods.toml` 读取真实的包路径与 Mod ID 进行符号替换，严禁机械化复制。
 
 ---
 
-## 💡 2. Standard Few-Shot Skeletons (Copy & Adapt)
-
-> [!IMPORTANT]
-> **占位符自适应规则**：
-> 下列骨架中的 `{{MOD_GROUP}}`、`{{MODID}}` 和 `{{MAIN_CLASS}}` 均为符号占位符。在将代码写入项目前，您**必须**先从 `gradle.properties` 和 `neoforge.mods.toml` 读取真实的包路径与 Mod ID，并将占位符替换为当前项目的真实命名空间，严禁机械化复制。
-> *注：`references/` 目录下的所有 markdown 指南代码示例中的包名（如 `com.tutorial.tutorialmod`）一律视为示例，同样必须在写入前按当前项目进行替换。*
-
-### 2.1 Block, Item, BlockEntity & Tab Registration
-```java
-package {{MOD_GROUP}}.registry;
-
-public class ModBlocks {
-    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks({{MAIN_CLASS}}.MODID);
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems({{MAIN_CLASS}}.MODID);
-    
-    // Auto-registers BOTH Block and its BlockItem
-    public static final DeferredBlock<Block> RUBY_BLOCK = BLOCKS.registerSimpleBlock("ruby_block", 
-            BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(5.0f).sound(SoundType.METAL));
-    public static final DeferredItem<BlockItem> RUBY_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(RUBY_BLOCK);
-}
-
-// In main mod class (Creative Mode Tab injection listener)
-private void addCreative(BuildCreativeModeTabContentsEvent event) {
-    if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) event.accept(ModItems.RUBY.get());
-}
-```
-
-### 2.2 Data Components & Attachments (Entity/Chunk custom data)
-```java
-package {{MOD_GROUP}}.registry;
-
-public class ModData {
-    // 1. Data Components (Stored on ItemStacks)
-    public static final DeferredRegister.DataComponents COMPONENTS = 
-        DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, {{MAIN_CLASS}}.MODID);
-        
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> MANA = 
-        COMPONENTS.registerComponentType("mana", builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT));
-
-    // 2. Attachments (Stored on Entities, BlockEntities, or Chunks)
-    public static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = 
-        DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, {{MAIN_CLASS}}.MODID);
-        
-    public static final Supplier<AttachmentType<Integer>> PLAYER_MANA = ATTACHMENTS.register("player_mana",
-        () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().build());
-        // Usage: player.getData(PLAYER_MANA.get()); player.setData(PLAYER_MANA.get(), 100);
-}
-```
-
-### 2.3 Ticking BlockEntity with Capability & Save/Load (Machines)
-```java
-package {{MOD_GROUP}}.block.entity;
-
-public class MyMachineBlockEntity extends BlockEntity {
-    private final ItemStackHandler inventory = new ItemStackHandler(1) {
-        @Override protected void onContentsChanged(int slot) { setChanged(); }
-    };
-    public MyMachineBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MY_MACHINE.get(), pos, state);
-    }
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("Inventory", this.inventory.serializeNBT(registries)); // MUST pass registries
-    }
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        this.inventory.deserializeNBT(registries, tag.getCompound("Inventory")); // MUST pass registries
-    }
-    public static void tick(Level level, BlockPos pos, BlockState state, MyMachineBlockEntity be) {
-        if (level.isClientSide()) return;
-        // Server tick logic
-    }
-}
-
-// Capability Registration (Listen on MOD event bus in Main Class constructor)
-// modEventBus.addListener(CapabilityRegistrar::registerCaps);
-public class CapabilityRegistrar {
-    public static void registerCaps(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, 
-            ModBlockEntities.MY_MACHINE.get(), (be, side) -> be.inventory);
-    }
-}
-```
-
-### 2.4 RegistryFriendly Custom Network Payload
-```java
-package {{MOD_GROUP}}.network;
-
-public record SyncDataPayload(ItemStack stack, int value) implements CustomPacketPayload {
-    public static final Type<SyncDataPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath({{MAIN_CLASS}}.MODID, "sync"));
-    
-    // MUST use RegistryFriendlyByteBuf when transmitting ItemStack
-    public static final StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, SyncDataPayload> STREAM_CODEC = StreamCodec.composite(
-        ItemStack.STREAM_CODEC, SyncDataPayload::stack,
-        net.minecraft.network.codec.ByteBufCodecs.VAR_INT, SyncDataPayload::value,
-        SyncDataPayload::new
-    );
-    @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
-}
-```
+## 🧱 3. 可复制极简骨架
+当编写注册、自定义数据组件、BlockEntity 或自定义网络数据包，需要复制最短最简可行性骨架时，请阅读：
+[**`references/quick_skeletons.md`**](references/quick_skeletons.md) *(注意：此文件占用 1~2 个 references 限额配额)*
 
 ---
 
-## 📂 3. 100% Valid Reference Index (0-Latency Lookup)
+## 📂 4. 100% 导航索引大表 (按需单篇查阅，禁止批量全部打开)
 
-Directly `read` the exact file path below based on your current task (DO NOT call `glob`):
-
-### 🧪 Core Systems & Registrations
-| Task Category | Target File Path to READ |
+### 🧪 核心系统与注册项
+| 任务类型 | 目标专题路径 (READ ONLY) |
 | :--- | :--- |
-| NBT Replacement & Custom Data Components | `references/data_components.md` |
-| BlockEntity Inventory, Capability & Attachments | `references/capabilities_attachments.md` |
-| BlockEntity Base, Syncing & BlockState Saving | `references/block_entities.md` |
-| Advanced decoupling & Concurrency Safeties | `references/architecture_design.md` |
-| Config specs & TOML Reload Listeners | `references/configuration.md` |
-| Mod Access Transformers Configuration | `references/access_transformers.md` |
-| Common Dev Anti-Patterns & Bad vs Good | `references/anti_patterns.md` |
+| NBT 替代与自定义数据组件 (Data Components) | [references/data_components.md](references/data_components.md) |
+| BlockEntity 物品栏、能力接口 (Capability) 与 Attachments | [references/capabilities_attachments.md](references/capabilities_attachments.md) |
+| BlockEntity 基础、网络同步与 BlockState 保存 | [references/block_entities.md](references/block_entities.md) |
+| 容器 GUI 菜单、屏幕 (Menus, Screens) | [references/menus_screens.md](references/menus_screens.md) |
+| 配置文件 (Config specs) 与 TOML 重载监听 | [references/configuration.md](references/configuration.md) |
+| 模组访问转换器 (Access Transformers) 配置 | [references/access_transformers.md](references/access_transformers.md) |
+| 常见模组开发反模式与规避指南 (Anti-Patterns) | [references/anti_patterns.md](references/anti_patterns.md) |
 
-### 🧱 Block, Item & Loot Customizations
-| Task Category | Target File Path to READ |
+### 🧱 方块、物品与掉落物定制
+| 任务类型 | 目标专题路径 (READ ONLY) |
 | :--- | :--- |
-| Custom Blocks, Redstone, Doors & Crops | `references/custom_blocks.md` |
-| Custom Gear, Swords, Armor, Bows & Tools | `references/custom_gear.md` |
-| Item Properties, 2D Animation & Hover properties| `references/item_properties.md` |
-| BlockStates / ItemModels / LootTables / DataGen | `references/blockstates_models_datagen.md` |
-| Custom Recipes Serializers & MapCodecs | `references/custom_recipes.md` |
-| Crafting/Cooking/Smithing recipes DataGen | `references/recipes_standard_datagen.md` |
-| Custom Tooltips, Lore & Formatting | `references/item_tooltips.md` |
-| Custom Damage Types & Damage Sources | `references/damage_types.md` |
-| Block Colors & Custom Color Handlers | `references/color_handlers.md` |
-| Sound Events Registration & Triggering | `references/sounds.md` |
+| 自定义方块、红石、门与作物 | [references/custom_blocks.md](references/custom_blocks.md) |
+| 自定义装备、剑、护甲、弓与工具 | [references/custom_gear.md](references/custom_gear.md) |
+| 物品基本属性、2D 动画与悬停属性 | [references/item_properties.md](references/item_properties.md) |
+| 方块状态、物品模型 JSON 与 掉落表 DataGen | [references/blockstates_models_datagen.md](references/blockstates_models_datagen.md) |
+| 自定义配方序列化器 (Recipe Serializer) & MapCodecs | [references/custom_recipes.md](references/custom_recipes.md) |
+| 配方/标签 DataGen (Recipes/Tags DataGen) | [references/recipes_standard_datagen.md](references/recipes_standard_datagen.md) |
+| 物品悬停提示 (Tooltips)、Lore 与格式化 | [references/item_tooltips.md](references/item_tooltips.md) |
+| 自定义伤害类型 (Damage Types) 与伤害源 | [references/damage_types.md](references/damage_types.md) |
+| 方块/物品颜色处理器 (Color Handlers) | [references/color_handlers.md](references/color_handlers.md) |
+| 声音注册与触发 (Sounds) | [references/sounds.md](references/sounds.md) |
 
-### 🚀 Advanced Features (Worldgen, Mobs & Mixins)
-| Task Category | Target File Path to READ |
+### 🚀 高级特性 (Mixin、世界生成、流体与实体)
+| 任务类型 | 目标专题路径 (READ ONLY) |
 | :--- | :--- |
-| Configured Features & Placed Ores Generation | `references/worldgen_ores.md` |
-| ASM Mixin Injection, Redirect & Accessors | `references/mixins.md` |
-| Mob Entities, Attributes & Tick-Throttling AI | `references/custom_entities.md` |
-| Client-only Menus, Screens & Container GUIs | `references/menus_screens.md` |
-| Client-only HUD overlay rendering layers | `references/hud_overlay_layers.md` |
-| Custom Dimensions, Teleporters & Portals | `references/custom_dimensions.md` |
-| Custom Biomes & Climate properties | `references/custom_biomes.md` |
-| Villager Trades & Profession Leveling | `references/villager_trades.md` |
-| Global Loot Modifiers (GLM) for drops | `references/global_loot_modifiers.md` |
-| Custom Keybindings & Input mapping | `references/keybindings_input.md` |
-| JEI Mod Integration & Recipes displaying | `references/jei_integration.md` |
-| Event System listeners & Priorities | `references/event_system.md` |
-| Custom Particles & Particle Providers | `references/custom_particles.md` |
-| Custom Fluids, Fluid Tanks & Buckets | `references/custom_fluids.md` |
-| Datapack-driven Save Files & WorldData | `references/saved_data.md` |
-| DataPack Custom Enchantments & RegistrySetBuilder | `references/custom_enchantments.md` |
-| Potion Effects & Alchemical Brewing | `references/potions_brewing.md` |
-| Advancements / Trigger Criteria DataGen | `references/advancements_datagen.md` |
-| Custom Entity Models (.bbmodel) & Renderers | `references/custom_entity_models.md` |
-| BlockEntity Special Renderers (BER) | `references/block_entity_renderers.md` |
-| Custom Commands & Argument Parsers | `references/custom_commands.md` |
-| Data Maps & Registry-driven metadata | `references/data_maps.md` |
+| Configured Features & Placed Ores 矿石生成 | [references/worldgen_ores.md](references/worldgen_ores.md) |
+| Mixin 注入、重定向 (Redirect) 与 Accessor | [references/mixins.md](references/mixins.md) |
+| 实体模型 (BBModel) 与 渲染器 (BBModel Renderers) | [references/custom_entity_models.md](references/custom_entity_models.md) |
+| 实体属性、AI 行为树与实体 tick 优化 | [references/custom_entities.md](references/custom_entities.md) |
+| BlockEntity 专属特殊渲染器 (BER) | [references/block_entity_renderers.md](references/block_entity_renderers.md) |
+| 客户端 HUD overlay 渲染图层 | [references/hud_overlay_layers.md](references/hud_overlay_layers.md) |
+| 自定义维度、传送门 (Dimensions, Portals) | [references/custom_dimensions.md](references/custom_dimensions.md) |
+| 自定义生物群系 (Biomes) 与气候属性 | [references/custom_biomes.md](references/custom_biomes.md) |
+| 村民交易 (Villager Trades) 与职业等级 | [references/villager_trades.md](references/villager_trades.md) |
+| 全局掉落修改器 (GLM) | [references/global_loot_modifiers.md](references/global_loot_modifiers.md) |
+| 快捷键绑定与输入映射 (Keybindings) | [references/keybindings_input.md](references/keybindings_input.md) |
+| JEI 模组集成与配方展示 | [references/jei_integration.md](references/jei_integration.md) |
+| 事件总线监听机制与优先级 (Event System) | [references/event_system.md](references/event_system.md) |
+| 自定义粒子效果与粒子提供器 (Particles) | [references/custom_particles.md](references/custom_particles.md) |
+| 自定义流体、流体罐与流体桶 (Fluids) | [references/custom_fluids.md](references/custom_fluids.md) |
+| 保存与加载世界数据 (SavedData) | [references/saved_data.md](references/saved_data.md) |
+| 自定义附魔、数据驱动 RegistrySetBuilder | [references/custom_enchantments.md](references/custom_enchantments.md) |
+| 药水效果与炼药配方注册 (Brewing) | [references/potions_brewing.md](references/potions_brewing.md) |
+| 进度与成就 (Advancements) DataGen | [references/advancements_datagen.md](references/advancements_datagen.md) |
+| 自定义指令 (Commands) 与参数解析器 | [references/custom_commands.md](references/custom_commands.md) |
+| 数据映射表 (Data Maps) 驱动元数据 | [references/data_maps.md](references/data_maps.md) |
 
-| Blueprints & Examples | Target File Path to READ |
+### 💡 蓝图与完整案例
+| 任务类型 | 目标案例路径 (READ ONLY) |
 | :--- | :--- |
-| Standard Items/Blocks registration | `examples/registration_example.md` |
-| Registering Creative Tab | `examples/creative_tab_config_example.md` |
-| Model, State, Block Loot DataGen | `examples/datagen_example.md` |
-| Crafting Recipe, Tags DataGen | `examples/recipes_tags_example.md` |
-| Multi-loader platform decoupling | `examples/platform_decoupling_example.md` |
-
----
-
-## 🛠️ 4. Compulsory Toolchain Integration Loop (Validation)
-
-To ensure high-quality delivery, you MUST integrate these local tools during your development:
-
-1. **Autorouted MCP Search Pipeline (MCP 标准工具剧本)**:
-   - **Step 1: Locate via Search**: Call `search_class(query="...")` or `grep_source` to locate the class. If the Top-1 result returns `suggested_read`, directly use its `jar_path` and `file_path`.
-   - **Step 2: Read Target Range**: Call `read_file` with the extracted paths. For huge classes (e.g. `LivingEntity`), specify `start_line` / `end_line` ranges to avoid the 1500-line soft cap. Max range span is capped at 5000 lines.
-   - **Step 3: Quick Scan Methods**: Use `list_methods` to get method signature offsets. Note: This tool uses a regex-heuristic parser (marked as `"parser": "heuristic"`). For nested inner classes or complex syntax, verify details using `read_file`.
-2. **Compile-and-Repair Loop (编译自检反馈环)**：每次修改或编写 Java 文件后，在向用户呈递变更前，你**必须**优先运行编译自检脚本：
-   * **无注册项或 DataGen Provider 变更时**：仅运行 `python .agents/skills/workspace_setup/scripts/compile_and_repair.py`（执行 `compileJava`，退出码 0 即为通过）。
-   * **有注册项或 DataGen 相关更新时**：运行 `python .agents/skills/workspace_setup/scripts/compile_and_repair.py --with-data`（串行编译并触发 `runData` 更新 JSON 资源）。
+| 标准物品/方块注册完整实现 | [examples/registration_example.md](examples/registration_example.md) |
+| 创造模式物品栏 Tab 配置 | [examples/creative_tab_config_example.md](examples/creative_tab_config_example.md) |
+| 掉落物、状态与方块模型 DataGen 案例 | [examples/datagen_example.md](examples/datagen_example.md) |
+| 合成配方、物品 Tags 标签 DataGen 案例 | [examples/recipes_tags_example.md](examples/recipes_tags_example.md) |
+| 多端发布平台解耦架构 (Platform Decoupling) | [examples/platform_decoupling_example.md](examples/platform_decoupling_example.md) |

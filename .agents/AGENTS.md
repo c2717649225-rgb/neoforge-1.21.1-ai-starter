@@ -18,7 +18,7 @@
 3. **物理客户端隔离**：所有 Renderer、Model、Screen 相关类，必须隔离在标记了 `value = Dist.CLIENT` 的独立类中。通用逻辑绝对禁止直接引用客户端包下类。*后果：防止专用服务器启动时由于类验证失败崩溃。*
 4. **网络 Payload 线程隔离**：Handler 默认运行在网络线程，任何涉及修改世界、玩家状态的操作，必须包裹在 `context.enqueueWork(...)` 中提交给主线程。*后果：避免多线程并发修改世界导致线程冲突闪退。*
 5. **延迟解包安全**：类静态成员或静态初始化块（static block）中，绝对禁止直接对注册项调用 `.get()`（必须延迟在运行期或事件监听中访问）。*后果：防止在 Registry 注册事件调度前提前访问实例导致 NPE 直接崩溃。*
-6. **事件总线订阅对齐**：必须分清 Mod 总线与 NeoForge 游戏总线。具体 Event 归属与订阅规范见 [event_system.md](file:///d:/c128/mods/TutorialMod-1.21.1-NeoForge/.agents/skills/neoforge/references/event_system.md)。
+6. **事件总线订阅**：@EventBusSubscriber 一律省略 bus（由 IModBusEvent 等自动路由）；订阅监听方法必须 static。具体 Event 归属与订阅规范见 [event_system.md](skills/neoforge/references/event_system.md)。
 
 ---
 
