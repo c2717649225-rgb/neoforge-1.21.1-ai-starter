@@ -1,7 +1,13 @@
 ---
 name: writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: >
+  [按需·非默认] 用户要书面计划或 Major 任务拆解时使用。日常模组修复直接写码。
 ---
+
+> **[方案二 · 按需]**
+> 本 skill **不是**默认开发路径的一部分。
+> Minor / 编译修复 / 概念问答：**不要**加载本 skill。
+> 仅在用户要求或 Major 且本步骤需要时使用。
 
 # Writing Plans
 
@@ -58,7 +64,7 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** OPTIONAL SUB-SKILL (可选相关流程): Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan task-by-task. If in Grok-Gemini dual agent environment, present the frozen plan to human directly instead of forcing subagents. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -200,9 +206,9 @@ After saving the plan, offer execution choice:
 **Which approach?"**
 
 **If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
+- **OPTIONAL SUB-SKILL:** Use superpowers:subagent-driven-development (如果是在 Grok-Gemini 双 Agent 协作下，直接交付给人确认或本地执行，不叠加子代理流程)
 - Fresh subagent per task + two-stage review
 
 **If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
+- **OPTIONAL SUB-SKILL:** Use superpowers:executing-plans (优先以本侧 Grok/Gemini 冻结执行方案逻辑为准)
 - Batch execution with checkpoints for review

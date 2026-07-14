@@ -1,7 +1,13 @@
 ---
 name: receiving-code-review
-description: Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation
+description: >
+  [按需·非默认] 收到外部 CR 反馈时。非默认日常加载。
 ---
+
+> **[方案二 · 按需]**
+> 本 skill **不是**默认开发路径的一部分。
+> Minor / 编译修复 / 概念问答：**不要**加载本 skill。
+> 仅在用户要求或 Major 且本步骤需要时使用。
 
 # Code Review Reception
 

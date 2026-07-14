@@ -60,9 +60,22 @@
 
 ### 6. 🚀 规约加载优先级与免设计豁免 (Agility Guidelines)
 - **任务分级与免计划豁免**：
-  - **Major 核心变动**（自定义实体、机器、网络数据包、Mixin 拦截修改）：必须调用 `brainstorming` 进行设计，并编写 `implementation_plan.md`。
+  - **Major 核心变动**（自定义实体、机器、网络数据包、Mixin 拦截修改）：必须通过 writing-plans 编写执行计划（按需）。
   - **Minor 业务小改 / Trivial 编译修复 / 纯概念咨询 / 配方与物品数值微调**：**100% 豁免 brainstorming 冗长设计流程**。Agent 允许直接进入代码编写，严禁在 trivial 修复中空转。
 - **规则阅读优先级**：
   - Minecraft 模组开发任务中，领域规则具有绝对的最高优先级：
     1. **1.21.1 领域规约** ([`neoforge`](file:///.agents/skills/neoforge/SKILL.md) / `workspace_setup` / `verification`) 为一等公民，核心必读。
     2. **TDD / systematic-debugging** 等过程型工具链为二等公民，在调试、设计或复杂排障时按需唤醒。
+
+### 7. 🚀 方案二：默认路径与过程 skill 策略 (Superpowers Degradation)
+- **默认路径 (Primary Path)**：
+  - 任意模组任务的默认开发路径为：`AGENTS.md` -> `neoforge/` (+ 按需 references) -> 实现写码 -> 运行 `compile_and_repair.py` 编译自检（若动了注册或 DataGen，可带 `--with-data` 参数） -> 证据齐全再向用户声称完成。
+- **过程型辅助技能使用限制**：
+  - 过程型辅助技能（`brainstorming` / `plans` / `SDD` / `TDD` / `worktree` / `finishing`）**默认不加载**。
+  - **仅在以下情况按需调用**：用户显式点名要求，或任务为 Major 且当前步骤明确需要。
+  - **Minor / Trivial / 问答 / 编译修复**：**绝对禁止**加载过程型技能链。
+- **与外部多 Agent 工作流的关系**：
+  - 若用户使用了独立的「Grok 审稿 / Gemini 执行」双 Agent 协作提示词，以用户提示词与本 AGENTS 领域红线为唯一流程依据，**不要**在仓库内再强行叠加 superpowers 全套流程，避免叠床架屋。
+- **TDD 例外声明**：
+  - 模组仓库若无 JUnit / GameTest 设施，**绝对禁止**为了走 TDD 流程而强写空壳测试，物理验证一律以 `compile_and_repair.py` 编译通过为准。
+

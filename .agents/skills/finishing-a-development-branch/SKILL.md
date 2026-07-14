@@ -1,7 +1,13 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: >
+  [按需·非默认] 用户明确要合入菜单/收尾选项。非默认日常加载。
 ---
+
+> **[方案二 · 按需]**
+> 本 skill **不是**默认开发路径的一部分。
+> Minor / 编译修复 / 概念问答：**不要**加载本 skill。
+> 仅在用户要求或 Major 且本步骤需要时使用。
 
 # Finishing a Development Branch
 

@@ -1,7 +1,13 @@
 ---
 name: writing-skills
-description: (Maintainer Only) Use only when creating new skills, editing existing skills, or verifying skills work for the .agents framework itself. Regular mod development does NOT require loading this.
+description: >
+  [按需·非默认] (Maintainer Only) 仅在创建/维护 .agents 框架自身时加载。模组开发严禁阅读。
 ---
+
+> **[方案二 · 按需]**
+> 本 skill **不是**默认开发路径的一部分。
+> Minor / 编译修复 / 概念问答：**不要**加载本 skill。
+> 仅在用户要求或 Major 且本步骤需要时使用。
 
 # Writing Skills
 
@@ -15,7 +21,7 @@ You write test cases (pressure scenarios with subagents), watch them fail (basel
 
 **Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill teaches the right thing.
 
-**REQUIRED BACKGROUND:** You MUST understand superpowers:test-driven-development before using this skill. That skill defines the fundamental RED-GREEN-REFACTOR cycle. This skill adapts TDD to documentation.
+**OPTIONAL BACKGROUND:** 在维护框架自身时，可参考 test-driven-development 相关逻辑说明。
 
 **Official guidance:** For Anthropic's official skill authoring best practices, see anthropic-best-practices.md. This document provides additional patterns and guidelines that complement the TDD-focused approach in this skill.
 
@@ -279,11 +285,9 @@ wc -w skills/path/SKILL.md
 
 **When writing documentation that references other skills:**
 
-Use skill name only, with explicit requirement markers:
-- ✅ Good: `**REQUIRED SUB-SKILL:** Use superpowers:test-driven-development`
-- ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand superpowers:systematic-debugging`
-- ❌ Bad: `See skills/testing/test-driven-development` (unclear if required)
-- ❌ Bad: `@skills/testing/test-driven-development/SKILL.md` (force-loads, burns context)
+Use skill name only, with optional/referencing markers (注：本仓已完成过程降级，勿再写死 REQUIRED 强约束):
+- ✅ Good (可选参考): `**OPTIONAL SUB-SKILL:** Use superpowers:test-driven-development`
+- ✅ Good (可选参考): `**OPTIONAL BACKGROUND:** You may refer to superpowers:systematic-debugging`
 
 **Why no @ links:** `@` syntax force-loads files immediately, consuming 200k+ context before you need them.
 
@@ -390,7 +394,7 @@ Edit skill without testing? Same violation.
 - Don't "adapt" while running tests
 - Delete means delete
 
-**REQUIRED BACKGROUND:** The superpowers:test-driven-development skill explains why this matters. Same principles apply to documentation.
+**OPTIONAL BACKGROUND:** 可选：参考 test-driven-development 说明。
 
 ## Testing All Skill Types
 

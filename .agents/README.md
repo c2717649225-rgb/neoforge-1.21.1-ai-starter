@@ -69,7 +69,20 @@ AI 会自动通过终端调用 [`.agents/skills/workspace_setup/scripts/init_wor
 
 ## 📂 目录结构说明
 
-*   [`AGENTS.md`](./AGENTS.md)：**面向 AI 的常驻红线规约**。
-*   [`agent_workflow.md`](./agent_workflow.md)：双 Agent 协同与自检时序工作流说明。
+*   [`AGENTS.md`](./AGENTS.md)：**面向 AI 的唯一硬红线规约**。
 *   [`mcp/`](./mcp/)：包含 MCP 探针代码 `minecraft_mcp.py` 以及快速缓存。
-*   [`skills/`](./skills/)：包含 NeoForge API 示例、高维架构设计（SOLID）、项目一键重构引擎 `init_workspace.py` 以及配置/网络 Payload 的官方推荐模板。
+*   [`skills/`](./skills/)：
+    *   `neoforge/`：**一等领域知识库**。包含 NeoForge API 示例、高维架构设计（SOLID）以及配置/网络 Payload 模板。
+    *   `workspace_setup/`：一键重构引擎 `init_workspace.py` 和 `compile_and_repair.py` 自测试。
+    *   `using-superpowers/`：降级后的 **`skills-index` 技能可选索引目录**。
+    *   `其它过程型辅助/`：降级为非默认的“按需工具”，不默认日常加载。
+*   [`_archive/superpowers-noise/`](./_archive/superpowers-noise/)：**物理归档降噪库**。收纳了 HTML Mockup、前端 TS、Jest 自测等历史通用辅助噪音。
+
+---
+
+## ⚡ 4. 方案二：按需加载与物理门禁心智
+
+本套件现已完全切换为**方案二模式**。AI 助手默认**拒绝任何过程型技能的形式主义空转**（不默认运行 brainstorming、写 TDD 假测试、写执行计划等）。
+1. 日常模组修复，一律直接编码，运行本地 `compile_and_repair.py` 编译自检；
+2. 仅当用户明确点名或任务为 Major 级别，才按需查阅可选的过程型辅助技能；
+3. Grok 与 Gemini 协作时，优先执行用户给出的主提示词工作流，不叠床架屋。

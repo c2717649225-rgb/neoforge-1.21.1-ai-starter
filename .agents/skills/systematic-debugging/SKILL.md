@@ -1,7 +1,13 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: >
+  [按需·非默认] 遇到崩溃或诡异逻辑 bug，指导异常排障时使用。非默认日常开发加载。
 ---
+
+> **[方案二 · 按需]**
+> 本 skill **不是**默认开发路径的一部分。
+> Minor / 编译修复 / 概念问答：**不要**加载本 skill。
+> 仅在用户要求或 Major 且本步骤需要时使用。
 
 # Systematic Debugging
 
@@ -177,7 +183,7 @@ You MUST complete each phase before proceeding to the next.
    - Automated test if possible
    - One-off test script if no framework
    - MUST have before fixing
-   - Use the `superpowers:test-driven-development` skill for writing proper failing tests
+   - 可选：若项目有真实测试套件，可参考 test-driven-development 技能编写测试。本仓库默认无 GameTest 单元测试，在此一律使用 compile_and_repair.py 进行编译排阻，配合客户端冒烟验证，不得强写空壳测试。
 
 2. **Implement Single Fix**
    - Address the root cause identified
@@ -284,9 +290,9 @@ These techniques are part of systematic debugging and available in this director
 - **`defense-in-depth.md`** - Add validation at multiple layers after finding root cause
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
 
-**Related skills:**
-- **superpowers:test-driven-development** - For creating failing test case (Phase 4, Step 1)
-- **superpowers:verification-before-completion** - Verify fix worked before claiming success
+**可选相关链接 (非默认强制):**
+- **test-driven-development** - 可选：创建失败测试（本仓默认以 compile_and_repair.py 编译自检为准）
+- **verification-before-completion** - 可选：完成前物理证据核准验证说明
 
 ## Real-World Impact
 

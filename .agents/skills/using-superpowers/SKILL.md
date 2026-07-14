@@ -1,64 +1,39 @@
 ---
 name: using-superpowers
-description: Use when starting Major feature development or refactoring conversations - establishes how to find and use skills, while allowing minor/trivial tasks to bypass brainstorming.
+description: >
+  [索引·非默认强制] 本仓库技能目录说明。默认开发路径是 AGENTS + neoforge + compile_and_repair。仅在需要了解「还有哪些可选过程 skill」时阅读。禁止将其解释为每条消息必须先 invoke 全部 skill。
 ---
 
-<SUBAGENT-STOP>
-If you were dispatched as a subagent to execute a specific task, ignore this skill.
-</SUBAGENT-STOP>
+# 技能目录索引说明 (Skills Index)
 
-<EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+> **[方案二 · 按需]**
+> 本 skill **不是**默认开发路径的一部分。
+> Minor / 编译修复 / 概念问答：**不要**加载本 skill。
+> 仅在需要宏观查阅项目包含哪些辅助流程、或用户明确要求时按需阅读。
 
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+## 默认开发路径（本仓库）
+1. 阅读项目唯一的硬红线宪法 `AGENTS.md`；
+2. 阅读 `neoforge/SKILL.md` 领域技能，按场景按需打开 1～3 个 `references/*.md` API 设计参考；
+3. 直接开始写码；
+4. 运行 `python .agents/skills/workspace_setup/scripts/compile_and_repair.py` 编译自检验证；
+5. 有物理文件或编译输出证据后，再向用户汇报完成。
 
-This is not negotiable. You cannot rationalize your way out of this.
+## 过程型技能可选索引（仅 Major/用户显式点名时可选参考）
 
-*例外：本项目中的 Minor 业务开发（添加配方、普通物品/方块、修复编译错、数值微调等非核心大重构）与纯概念咨询，100% 豁免此规则。此场景下，请直接加载并阅读 neoforge 领域 Skill 开始写码，严禁进行 brainstorming 与写 TDD 假测试。*
-</EXTREMELY-IMPORTANT>
+| 辅助过程技能 | 触发条件 | 技能文档路径 |
+| :--- | :--- | :--- |
+| **brainstorming** | 仅 Major 大机器/大重构设计时可选，用于理清逻辑 | `../brainstorming/SKILL.md` |
+| **writing-plans** | 用户明确要求提供书面计划，或 Major 复杂任务拆解时 | `../writing-plans/SKILL.md` |
+| **executing-plans** | 已有冻结计划且用户要求按任务逐项执行时 | `../executing-plans/SKILL.md` |
+| **subagent-driven-development** | 多 subagent 并行且用户要求使用 SDD 时 | `../subagent-driven-development/SKILL.md` |
+| **using-git-worktrees** | 破坏性大重构前，或用户要求隔离开发分支时 | `../using-git-worktrees/SKILL.md` |
+| **finishing-a-development-branch** | 用户明确要求提供合入分支/清理菜单时 | `../finishing-a-development-branch/SKILL.md` |
+| **requesting-code-review** | 用户明确要求对改动代码进行 CR 时 | `../requesting-code-review/SKILL.md` |
+| **receiving-code-review** | 收到外部代码审查意见，评估修改细节时 | `../receiving-code-review/SKILL.md` |
+| **systematic-debugging** | 遇到崩溃/诡异逻辑 bug，指导排障时 | `../systematic-debugging/SKILL.md` |
+| **task_monitor** | 长时间 Gradle 编译，防编译任务冻结超时监控时 | `../task_monitor/SKILL.md` |
 
-## The Rule
-
-**Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
-
-**Before entering plan mode (or writing implementation plans via writing-plans) for Major features:** if you haven't already brainstormed, invoke the brainstorming skill first. Minor tasks can directly write implementation plans without brainstorming.
-
-Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
-
-## Skill Priority
-
-Minecraft 模组开发任务中，领域/实现技能具有绝对的最高优先级（1. `neoforge` + `workspace_setup` + `verification` 为一等公民核心必读），其余辅助/过程性技能在 Major 核心设计、多任务或复杂调试时按需调用。
-
-- "Let's build a Custom Machine (Major)" -> superpowers:brainstorming first, then implementation skills.
-- "Add a simple Item/Recipe (Minor) or Fix compilation" -> Skip brainstorming/systematic-debugging, load neoforge directly.
-
-## Red Flags
-
-These thoughts mean STOP—you're rationalizing:
-
-| Thought | Reality |
-|---------|---------|
-| "This is just a simple question" | Minor/Trivial questions are exempted. For Major tasks, invoke the skill. |
-| "I need more context first" | Skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
-| "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If a skill exists, use it. |
-| "I remember this skill" | Skills evolve. Read current version. |
-| "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Minor tasks are exempted. Major tasks must not bypass. |
-| "I'll just do this one thing first" | Check BEFORE doing anything. |
-| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
-| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
-
-## Platform Adaptation
-
-If your harness appears here, read its reference file for special instructions:
-
-- Codex: `references/codex-tools.md`
-- Pi: `references/pi-tools.md`
-- Antigravity: `references/antigravity-tools.md`
-
-## User Instructions
-
-User instructions (CLAUDE.md, AGENTS.md, GEMINI.md, etc, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+## 🚫 禁止
+*   **禁止形式主义**：禁止在 Minor 任务/简单编译修复中加载 brainstorming + writing-plans + SDD 全套流水线。
+*   **禁止为走流程而走流程**：本仓库无 GameTest 测试设施时，绝对禁止为了通过 TDD 而强写空壳测试。
+*   **禁止写死工具名**：隔离时若仓库提供了特定的 worktree 脚本则优先遵循，不得假设固定工具名。

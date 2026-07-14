@@ -1,7 +1,13 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix on projects with active testing suites. In projects lacking JUnit/GameTest infrastructure (like this neoforge starter), compile-and-repair and client smoke testing are the equivalent validation standards.
+description: >
+  [按需·非默认] 仅当项目存在真实测试设施时使用；本仓默认不适用，以 compile_and_repair 自测试为准。
 ---
+
+> **[方案二 · 按需]**
+> 本 skill **不是**默认开发路径的一部分。
+> Minor / 编译修复 / 概念问答：**不要**加载本 skill。
+> 仅在用户要求或 Major 且本步骤需要时使用。
 
 # Test-Driven Development (TDD)
 
