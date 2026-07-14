@@ -1,69 +1,35 @@
 # .agents AI 辅助开发增强包 (Developer Guide)
 
-这是一个专门为 Minecraft 1.21.1 + NeoForge 21.1.x 模组开发定制的通用 AI 辅助套件（AI SDK）。它包含跨客户端心智红线规约、领域技能参考库以及基于 Model Context Protocol (MCP) 的原版/依赖源码高速探针工具。
+这是一个专门为 Minecraft 1.21.1 + NeoForge 模组开发定制的通用 AI 辅助套件。
 
 ---
 
-## 🚀 1. ⏱️ 5 分钟 Onboarding Checklist (核心接入契约)
+## 🚀 ⏱️ 5 分钟 Onboarding Checklist (核心接入)
 
-拷贝本包到模组工程根目录（与 `build.gradle` / `gradle.properties` 同级）后，请**必须**依次执行以下步骤：
+1. **步骤一：挂载项目规则**
+   将 [`.agents/AGENTS.md`](./AGENTS.md) 的内容注册为您当前使用的 AI 客户端的常驻项目规则 / 系统提示词（System Prompt）。
 
-- [ ] **步骤一：确认 AI 客户端已加载全局红线**
-  - **如何加载**：确保当前 AI 客户端已读取到并遵循了 [`.agents/AGENTS.md`](./AGENTS.md)。以当前客户端官方文档为准，目标是成功加载该规则。常见客户端配置如下：
-    - **Cursor**：将 `.agents/AGENTS.md` 的内容拷贝至根目录的 `.cursorrules` 文件中，或在新版客户端 `.cursor/rules/` 目录下添加配置以常驻读取。
-    - **Claude Code**：在启动时使用规则加载配置（或将其内容添加为常驻提示词）。
-    - **Cline / Roo Code**：在项目根目录创建 `.clinerules` 并以链接或直接复制形式加载。
-    - **Aider**：在项目根目录创建 `.aider.conf.yml` 或规则参数并映射加载本红线。
-    - **其他客户端（包括 Grok）**：在配置中将 `.agents/AGENTS.md` 注册为该项目的常驻系统提示词（Project Rules）。
+2. **步骤二：激活 MCP 源码探针**
+   在 AI 客户端的 MCP 配置中注册探针（以提供游戏及依赖的源码检索能力）：
+   ```json
+   {
+     "mcpServers": {
+       "minecraft-mcp": {
+         "command": "python",
+         "args": [
+           "/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py"
+         ]
+       }
+     }
+   }
+   ```
+   *(请将 `args` 改为本机项目 `minecraft_mcp.py` 的绝对路径。)*
 
-- [ ] **步骤二：注册并激活 MCP 源码探针 (MANDATORY / REQUIRED)**
-  - 本探针直接为 AI 提供了检索 Minecraft 原版与 NeoForge 源码的接口。**如果不注册 MCP 探针，AI 将由于无法检索真源码而自动停工。**
-  - **注册路径**：`/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py`
-  - **通用配置方式**：在你使用的 AI 客户端的 MCP / 工具服务器配置中，注册本地探针（具体菜单名因客户端而异，如 Cursor、Claude Code、Cline、Aider、Grok 等）。多数客户端接受类似如下的服务器定义：
-      ```json
-      {
-        "mcpServers": {
-          "minecraft-mcp": {
-            "command": "python",
-            "args": [
-              "/ABS/PATH/TO/PROJECT/.agents/mcp/minecraft_mcp.py"
-            ]
-          }
-        }
-      }
-      ```
-      *(请将 `args` 中的路径改为本机项目中 `minecraft_mcp.py` 的绝对路径；字段名以当前客户端文档为准。)*
+3. **步骤三：一键工作区初始化**
+   向 AI 助手发送：`“帮我初始化一下这个工作区”`，AI 将自动调用 `init_workspace.py` 重构物理包命名空间。
 
-- [ ] **步骤三：执行一键工作区初始化**
-  - 在聊天框中向 AI 助手下达指令：`“帮我初始化一下这个工作区”`，AI 会自动跑脚本重构包结构和 Mod ID（见下文第 3 节说明）。
-
-- [ ] **步骤四：跑通一次本地编译自检**
-  - 在终端中运行一次 `python .agents/skills/workspace_setup/scripts/compile_and_repair.py`，验证本地编译环境完全通过。
-
----
-
-## 2. 🔌 探针注册验证
-
-配置好 MCP 后，可让 AI 在聊天框中运行：
-> `search_class Block` 或 `read_class net.minecraft.world.level.block.Block`
-如果能成功搜索并读取到原版 `Block` 类源码，说明探针已 100% 接入成功。
-
----
-
-## 3. 🚀 一键初始化新项目说明 (由 AI 执行)
-
-当您将 `.agents` 文件夹拷贝进一个新的 NeoForge 模组项目时，您**不需要手动执行复杂的改名或重构操作**。
-
-只需在聊天框中直接向 AI 助手下达指令：
-
-> **“帮我初始化一下这个工作区”**
-
-AI 会自动通过终端调用 [`.agents/skills/workspace_setup/scripts/init_workspace.py`](./skills/workspace_setup/scripts/init_workspace.py) 脚本。该脚本会在 10 毫秒内**以 100% 确定性**为您自动执行以下任务：
-1. 从新项目的 `gradle.properties` 中自动读取真实的 `mod_id` 和主包名。
-2. 将 `src/main/resources/assets/examplemod` 等物理文件夹自动重命名为您的真实 `mod_id` 命名空间。
-3. 自动生成对应的 `yourmod.mixins.json` 并解禁 `neoforge.mods.toml` 里的 mixins 模板占位符。
-4. 自动修改主类（Main Class）中的 `MODID` 字符串常量及相关注释。
-5. 自动同步更新 `.agents/AGENTS.md` 顶部的参考元数据。
+4. **步骤四：跑通一次本地编译**
+   在终端中运行 `python .agents/skills/workspace_setup/scripts/compile_and_repair.py`，验证本地编译通过。
 
 ---
 
@@ -74,15 +40,6 @@ AI 会自动通过终端调用 [`.agents/skills/workspace_setup/scripts/init_wor
 *   [`skills/`](./skills/)：
     *   `neoforge/`：**一等领域知识库**。包含 NeoForge API 示例、高维架构设计（SOLID）以及配置/网络 Payload 模板。
     *   `workspace_setup/`：一键重构引擎 `init_workspace.py` 和 `compile_and_repair.py` 自测试。
-    *   `using-superpowers/`：降级后的 **`skills-index` 技能可选索引目录**。
-    *   `其它过程型辅助/`：降级为非默认的“按需工具”，不默认日常加载。
-*   [`_archive/superpowers-noise/`](./_archive/superpowers-noise/)：**物理归档降噪库**。收纳了 HTML Mockup、前端 TS、Jest 自测等历史通用辅助噪音。
-
----
-
-## ⚡ 4. 方案二：按需加载与物理门禁心智
-
-本套件现已完全切换为**方案二模式**。AI 助手默认**拒绝任何过程型技能的形式主义空转**（不默认运行 brainstorming、写 TDD 假测试、写执行计划等）。
-1. 日常模组修复，一律直接编码，运行本地 `compile_and_repair.py` 编译自检；
-2. 仅当用户明确点名或任务为 Major 级别，才按需查阅可选的过程型辅助技能；
-3. Grok 与 Gemini 协作时，优先执行用户给出的主提示词工作流，不叠床架屋。
+    *   `systematic-debugging/`：错误排障与防御设计指引。
+    *   `task_monitor/`：可选后台编译防超时监控。
+*   [`_archive/`](./_archive/)：不用的过程型辅助技能（superpowers-optional）与 HTML 噪音（superpowers-noise）的归档备份目录。
