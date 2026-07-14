@@ -290,9 +290,8 @@ These techniques are part of systematic debugging and available in this director
 - **`defense-in-depth.md`** - Add validation at multiple layers after finding root cause
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
 
-**可选相关链接 (非默认强制):**
-- **test-driven-development** - 可选：创建失败测试（本仓默认以 compile_and_repair.py 编译自检为准）
-- **verification-before-completion** - 可选：完成前物理证据核准验证说明
+**可选相关链接 (已归档):**
+- *注：通用测试概念 TDD 与验证技能已移入 `_archive/superpowers-optional/` 归档备份中，本仓模组开发一律直接使用 compile_and_repair.py 进行编译自测试。*
 
 ## Real-World Impact
 
