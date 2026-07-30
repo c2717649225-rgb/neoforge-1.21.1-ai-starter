@@ -45,6 +45,11 @@ public class ModBlockStateProvider extends BlockStateProvider {
         // 2. 生成带朝向状态的自定义机器方块模型 (如粉碎机 Crusher)
         // 假设机器的前面、侧面、顶部贴图分别为：crusher_front, crusher_side, crusher_top
         registerCrusher(ModBlocks.CRUSHER.get());
+
+        // 3. 生成柱状/上下异色方块 (如柱状机器底座 Turret Base)
+        // 使用 models().cubeColumn 或 models().cubeBottomTop
+        ModelFile columnModel = models().cubeColumn("turret_base", modLoc("block/turret_base_side"), modLoc("block/turret_base_top"));
+        simpleBlockWithItem(ModBlocks.TURRET_BASE.get(), columnModel);
     }
 
     private void registerCrusher(Block block) {

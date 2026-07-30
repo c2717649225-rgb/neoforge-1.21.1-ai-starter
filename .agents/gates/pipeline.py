@@ -13,6 +13,16 @@ stops at the first failure.
 """
 from __future__ import annotations
 
+import sys
+
+if sys.version_info < (3, 10):
+    sys.stderr.write(
+        f"[ERROR] Python 3.10 or higher is required to run gate scripts. "
+        f"Current Python: {sys.version_info.major}.{sys.version_info.minor}\n"
+        "Please use: python .agents/run.py ...\n"
+    )
+    sys.exit(1)
+
 import argparse
 import json
 import math

@@ -27,6 +27,15 @@ from __future__ import annotations
 import json
 import re
 import sys
+
+if sys.version_info < (3, 10):
+    sys.stderr.write(
+        f"[ERROR] Python 3.10 or higher is required to run asset_gate.py. "
+        f"Current Python: {sys.version_info.major}.{sys.version_info.minor}\n"
+        "Please use: python .agents/run.py ...\n"
+    )
+    sys.exit(1)
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple

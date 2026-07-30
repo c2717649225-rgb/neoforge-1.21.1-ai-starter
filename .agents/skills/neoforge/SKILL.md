@@ -62,10 +62,11 @@ description: >
 
 ## 📂 4. 100% 导航索引大表 (按需单篇查阅，禁止批量全部打开)
 
-### 🎯 设计拆解（用户给的是玩法愿景而非具体任务时，先读此篇）
+### 🎯 设计拆解与复杂模组 SOP（用户给的是玩法愿景而非具体任务时，先读此篇）
 | 任务类型 | 目标专题路径 (READ ONLY) |
 | :--- | :--- |
 | 玩法需求 → 平台能力拆解 SOP、任务清单模板（设计阶段读，不占实现限额） | [references/design_intake.md](references/design_intake.md) |
+| 复杂/大型模组 7 阶段自适应开发与移植 SOP（重型/多系统大模组必读） | [references/complex_mod_development_sop.md](references/complex_mod_development_sop.md) |
 
 ### 🧪 核心系统与注册项
 | 任务类型 | 目标专题路径 (READ ONLY) |

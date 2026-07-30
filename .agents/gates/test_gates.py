@@ -408,12 +408,10 @@ class TestGatesAndWorkspace(unittest.TestCase):
                 command,
             )
         else:
-            with (
-                mock.patch.object(compile_and_repair.os, "getpgid", return_value=4242),
-                mock.patch.object(compile_and_repair.os, "killpg") as killpg,
-            ):
-                compile_and_repair.terminate_process_tree(process)
-            killpg.assert_called_once()
+            with mock.patch.object(compile_and_repair.os, "getpgid", return_value=4242):
+                with mock.patch.object(compile_and_repair.os, "killpg") as killpg:
+                    compile_and_repair.terminate_process_tree(process)
+                    killpg.assert_called_once()
 
     def test_init_workspace_system_namespaces_protection(self):
         """Verify assets/minecraft and data/minecraft are never renamed into the mod_id."""

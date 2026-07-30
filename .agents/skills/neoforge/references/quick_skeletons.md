@@ -2,7 +2,7 @@
 status: verified
 pin_minecraft: 1.21.1
 pin_neo: 21.1.x
-last_verified: 2026-07-28
+last_verified: 2026-07-30
 ---
 # Standard Few-Shot Skeletons (可复用骨架)
 
@@ -244,7 +244,8 @@ public class MyJigsawStructure extends Structure {
             this.maxDistanceFromCenter,
             PoolAliasLookup.create(this.poolAliases, blockpos, context.seed()),
             this.dimensionPadding,
-            this.liquidSettings
+            this.liquidSettings,
+            false
         );
     }
 

@@ -88,10 +88,16 @@ public class MyMachineMenu extends AbstractContainerMenu {
             }
         }
 
-        // 3. 绑定玩家的快捷栏 (共 9 格，索引 0-8)
+        // 3. 绑定玩家的快捷栏 (Hotbar, 1 行 9 格，索引 0-8)
         for (int col = 0; col < 9; ++col) {
             this.addSlot(new Slot(playerInv, col, 8 + col * 18, 142));
         }
+
+        // 4. 使用 DataSlot 同步能量/进度等整型数据 (替换 1.12.2 旧版 IContainerListener)
+        this.addDataSlot(new DataSlot() {
+            @Override public int get() { return blockEntity.getEnergyStored(); }
+            @Override public void set(int value) { blockEntity.setEnergyStored(value); }
+        });
     }
 
     @Override
