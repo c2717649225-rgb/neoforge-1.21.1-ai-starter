@@ -368,10 +368,23 @@ def check_model_references(view: ResourceView, ns: str) -> List[Finding]:
             if not isinstance(tex, str) or tex.startswith("#"):
                 continue  # texture variable indirection
             t_ns, t_path = split_ref(tex, ns)
-            if t_ns == ns and not texture_exists(t_path):
-                add("missing_texture", "warning", model.name,
-                    f"Texture `{tex}` missing (assets/{ns}/textures/{t_path}.png). "
-                    "Add art or a placeholder PNG before release.")
+            if t_ns == ns:
+                if t_path.startswith("blocks/") or t_path.startswith("items/"):
+                    add("legacy_plural_texture_reference", "error", model.name,
+                        f"Legacy plural texture reference `{tex}` detected in model `{model.name}`. "
+                        "1.21.1+ requires singular `block/` or `item/` path prefix.")
+                elif not texture_exists(t_path):
+                    add("missing_texture", "warning", model.name,
+                        f"Texture `{tex}` missing (assets/{ns}/textures/{t_path}.png). "
+                        "Add art or a placeholder PNG before release.")
+
+    # Check for legacy 1.20.x plural texture directories: textures/blocks/ or textures/items/
+    for plural_dir in ["blocks", "items"]:
+        legacy_pngs = view.glob(f"assets/{ns}/textures/{plural_dir}/**/*.png")
+        if legacy_pngs:
+            add("legacy_plural_texture_directory", "error", f"assets/{ns}/textures/{plural_dir}/",
+                f"Legacy 1.20.x plural texture directory `textures/{plural_dir}/` detected ({len(legacy_pngs)} PNGs). "
+                f"1.21.1+ requires singular `textures/{plural_dir[:-1]}/`. Rename directory to prevent 226+ client atlas missing texture warnings.")
 
     return findings
 

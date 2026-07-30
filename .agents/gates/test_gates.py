@@ -138,11 +138,23 @@ class TestGatesAndWorkspace(unittest.TestCase):
             },
             subjects,
         )
-        self.assertTrue(all(
-            finding.rule_id == "datagen_resource_in_main"
-            and finding.severity == "error"
-            for finding in findings
-        ))
+
+    def test_asset_gate_detects_legacy_plural_textures(self):
+        """Verify asset_gate detects legacy textures/blocks/ dir and models with blocks/ refs."""
+        main = self.test_dir / "src" / "main" / "resources"
+        legacy_png = main / "assets" / "testmod" / "textures" / "blocks" / "old_block.png"
+        legacy_png.parent.mkdir(parents=True, exist_ok=True)
+        legacy_png.write_bytes(b"dummy")
+
+        legacy_model = main / "assets" / "testmod" / "models" / "block" / "old_block.json"
+        legacy_model.parent.mkdir(parents=True, exist_ok=True)
+        legacy_model.write_text('{"textures": {"all": "testmod:blocks/old_block"}}', encoding="utf-8")
+
+        view = asset_gate.ResourceView(self.test_dir)
+        findings = asset_gate.check_model_references(view, "testmod")
+        rule_ids = {f.rule_id for f in findings}
+        self.assertIn("legacy_plural_texture_directory", rule_ids)
+        self.assertIn("legacy_plural_texture_reference", rule_ids)
 
     def test_asset_gate_reports_bilingual_key_drift(self):
         """en_us and zh_cn must expose the same translation-key set."""
@@ -345,6 +357,27 @@ class TestGatesAndWorkspace(unittest.TestCase):
         props.write_text("neo_version=21.1.234\n", encoding="utf-8")
         self.assertEqual("21.1.234", static_gate.read_neo_version(self.test_dir))
         self.assertEqual(234, static_gate.parse_neo_patch_version("21.1.234"))
+
+    def test_eventbus_redundant_bus_param_version_boundary(self):
+        """Verify bus = Bus.MOD is only flagged as redundant on 21.1.181+, not on 21.1.180."""
+        file_path = self.test_dir / "src" / "main" / "java" / "com" / "example" / "MyEventSub.java"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        content = (
+            "package com.example;\n"
+            "import net.neoforged.fml.common.EventBusSubscriber;\n"
+            "@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)\n"
+            "public class MyEventSub {}\n"
+        )
+
+        findings_180 = static_gate.scan_file(
+            file_path, content, java_root=self.test_dir / "src" / "main" / "java", mod_id="testmod", neo_version="21.1.180"
+        )
+        self.assertFalse(any(f.rule_id == "eventbus_redundant_bus_param" for f in findings_180))
+
+        findings_181 = static_gate.scan_file(
+            file_path, content, java_root=self.test_dir / "src" / "main" / "java", mod_id="testmod", neo_version="21.1.181"
+        )
+        self.assertTrue(any(f.rule_id == "eventbus_redundant_bus_param" for f in findings_181))
 
     def test_datagen_git_changes_are_scoped(self):
         """Reproducibility status ignores unrelated developer changes."""

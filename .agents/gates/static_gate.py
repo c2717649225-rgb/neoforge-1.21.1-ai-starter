@@ -542,9 +542,11 @@ def scan_file(
     *,
     java_root: Path,
     mod_id: str,
+    neo_version: str = "21.1.0",
 ) -> List[Finding]:
     findings: List[Finding] = []
     rel = path
+    patch_ver = parse_neo_patch_version(neo_version)
 
     # --- client_import_in_common ---
     # Exempt: path under **/client/** OR file explicitly Dist.CLIENT-isolated
@@ -684,6 +686,22 @@ def scan_file(
                     "(Instance methods via addListener / EVENT_BUS.register(this) are OK outside this annotation.)",
                 )
             )
+
+    # --- eventbus_redundant_bus_param: NeoForge 21.1.181+ redundant bus = Bus.MOD ---
+    if patch_ver >= 181:
+        for m in re.finditer(r"@EventBusSubscriber\s*\(([^)]+)\)", text):
+            params = m.group(1)
+            if re.search(r"\bbus\s*=\s*(?:EventBusSubscriber\.)?Bus\.MOD\b", params):
+                findings.append(
+                    Finding(
+                        "eventbus_redundant_bus_param",
+                        "warning",
+                        rel,
+                        line_of(text, m.start()),
+                        f"In NeoForge {neo_version} (>= 21.1.181), @EventBusSubscriber automatically routes IModBusEvent handlers. "
+                        "Specifying `bus = Bus.MOD` is redundant and should be omitted.",
+                    )
+                )
 
     # --- static_registry_get: P0-5, eager .get() in static initializers ---
     # Single-line heuristic: a `static` field assignment whose initializer calls
@@ -859,6 +877,7 @@ def run_gate(project_root: Path) -> Tuple[int, List[Finding]]:
         return 2, []
 
     mod_id = read_mod_id(project_root)
+    neo_version = read_neo_version(project_root)
     files = iter_host_java_files(project_root)
     all_findings: List[Finding] = []
     for f in files:
@@ -868,7 +887,7 @@ def run_gate(project_root: Path) -> Tuple[int, List[Finding]]:
             print(f"WARNING: cannot read {f}: {e}")
             continue
         all_findings.extend(
-            scan_file(f, text, java_root=java_root, mod_id=mod_id)
+            scan_file(f, text, java_root=java_root, mod_id=mod_id, neo_version=neo_version)
         )
 
     return 0, all_findings
