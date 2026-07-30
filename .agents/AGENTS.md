@@ -2,6 +2,10 @@
 
 > [!IMPORTANT]
 > **P0 为物理硬红线，违反可能直接导致游戏崩溃或存档损坏，必须优先遵守。P1 为推荐规范。**  
+# 模组开发项目规范 (Minecraft Modding Rules)
+
+> [!IMPORTANT]
+> **P0 为物理硬红线，违反可能直接导致游戏崩溃或存档损坏，必须优先遵守。P1 为推荐规范。**  
 > 本文件服务于**通用** NeoForge 1.21.1 AI 工具包；不绑定任何具体玩法模组。
 
 ---
@@ -9,6 +13,7 @@
 ## 📌 项目元数据自适应规范
 - **版本锚点**: Minecraft 1.21.1 + NeoForge 21.1.x（以宿主 `gradle.properties` 中的精确 `neo_version` 为准；21.1.x 内也存在 API 行为分界）。
 - **真元数据源**: 写码或生成资源前，**必须先读取**宿主工程的 `gradle.properties` 与 `neoforge.mods.toml`，获取真实 Mod ID 与 Java 包名；禁止写死模板默认值。
+- **文件编码规范**: Windows PowerShell 环境下读取工具包 `.md` 文件时，必须显式指定 UTF-8 编码（例如：`Get-Content -Encoding UTF8 .agents/...`），防止终端默认 GBK 导致中文字符乱码。
 
 ---
 

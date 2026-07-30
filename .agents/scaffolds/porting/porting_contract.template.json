@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModPortingContract",
+  "type": "object",
+  "required": [
+    "feature_id",
+    "legacy_version",
+    "target_version",
+    "legacy_behavior",
+    "modern_mapping",
+    "acceptance_tests"
+  ],
+  "properties": {
+    "feature_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_\\-]+$"
+    },
+    "legacy_version": {
+      "type": "string",
+      "example": "1.12.2 / 1.20.1"
+    },
+    "target_version": {
+      "type": "string",
+      "example": "1.21.1-NeoForge"
+    },
+    "legacy_behavior": {
+      "type": "array",
+      "description": "Legacy behavior description with source code file and line references",
+      "items": {
+        "type": "object",
+        "required": ["component", "description", "source_reference"],
+        "properties": {
+          "component": { "type": "string" },
+          "description": { "type": "string" },
+          "source_reference": { "type": "string", "example": "com/legacy/mod/TileEntityX.java#L45-L80" }
+        }
+      }
+    },
+    "modern_mapping": {
+      "type": "array",
+      "description": "1.21.1 Modern NeoForge implementation mapping plan",
+      "items": {
+        "type": "object",
+        "required": ["legacy_component", "modern_api", "implementation_notes"],
+        "properties": {
+          "legacy_component": { "type": "string" },
+          "modern_api": { "type": "string", "example": "Capabilities.ItemHandler.BLOCK or DataComponentType" },
+          "implementation_notes": { "type": "string" }
+        }
+      }
+    },
+    "acceptance_tests": {
+      "type": "array",
+      "description": "List of @GameTest assertions verifying functional equivalence",
+      "items": {
+        "type": "string",
+        "example": "com.example.mod.PortingGameTests#testTileEntityXEquivalence"
+      }
+    },
+    "known_deviations": {
+      "type": "array",
+      "description": "Acceptable behavior deviations due to 1.21.1 API redesigns with justification",
+      "items": {
+        "type": "object",
+        "required": ["deviation", "reason"],
+        "properties": {
+          "deviation": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -60,6 +60,7 @@ neoforge-1.21.1-ai-starter/
 
 - **JDK 21**（`JAVA_HOME` 或 PATH；`java -version` 显示 21）
 - **Python 3.10+**（init / MCP / 自检脚本）。若默认 `python` 较旧，仓库的 `.agents/run.py` 会自动寻找可用的 3.10+ 解释器。
+- **文件编码提示**：Windows PowerShell 5.1 环境下读取 `.agents/` 内的 `.md` 文档时，请显式指定 `-Encoding UTF8`（例如 `Get-Content -Encoding UTF8 .agents/AGENTS.md`），防止系统默认 GBK 导致乱码。
 - Git；首次构建会拉取依赖，需网络与足够磁盘
 
 ---

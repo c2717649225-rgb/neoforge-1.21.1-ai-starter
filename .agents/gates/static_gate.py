@@ -62,6 +62,24 @@ def read_mod_id(project_root: Path) -> str:
     return "tutorialmod"
 
 
+def read_neo_version(project_root: Path) -> str:
+    props = project_root / "gradle.properties"
+    if not props.is_file():
+        return "21.1.0"
+    for line in props.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if line.startswith("neo_version=") or line.startswith("neo_version ="):
+            return line.split("=", 1)[1].strip()
+    return "21.1.0"
+
+
+def parse_neo_patch_version(neo_version: str) -> int:
+    match = re.search(r"21\.1\.(\d+)", neo_version)
+    if match:
+        return int(match.group(1))
+    return 0
+
+
 def iter_host_java_files(project_root: Path) -> List[Path]:
     java_root = project_root / "src" / "main" / "java"
     if not java_root.is_dir():

@@ -1,5 +1,10 @@
 # NeoForge 1.21.1 材质、模型与掉落表数据生成 (DataGen) 指南
 
+> [!IMPORTANT]
+> **1.21.1 纹理路径硬性规范**：
+> 1.21.1 原版与 DataGen 强制要求贴图必须放在**单数目录**（`textures/block/` 与 `textures/item/`）。
+> **老模组移植警告**：旧版 (1.20.1-) 的复数路径（`textures/blocks/` 与 `textures/items/`）会导致 226+ 条纹理丢失紫黑格子告警，移植时第一动作必须重命名为单数目录！
+
 > [!WARNING]
 > **⚠️ 示例包名禁原样粘贴**：
 > 下方所有示例及 references 中的 `com.tutorial.tutorialmod` 均为占位。写入前必须通过读取 `gradle.properties`（获取真实 Group/MOD ID）并执行 `init_workspace.py` 动态重构为当前项目的真实命名空间，严禁硬编码提交。

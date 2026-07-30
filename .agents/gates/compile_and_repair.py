@@ -552,6 +552,11 @@ def main():
         
     print("Step 1 SUCCESS: Compilation passed 100%! No syntax errors.")
 
+    full_output = result.stdout + "\n" + result.stderr
+    deprecations = re.findall(r"Note:\s+.*?\buses or overrides a deprecated API\b", full_output, re.IGNORECASE)
+    if deprecations:
+        print(f"[info] Deprecation Warning: Compiler reported {len(deprecations)} deprecated API notice(s). Consider checking and cleaning deprecated methods.")
+
     step = 2
     # L2 static gate (only when requested; never widens scan beyond src/main/java)
     if with_static and not skip_static:

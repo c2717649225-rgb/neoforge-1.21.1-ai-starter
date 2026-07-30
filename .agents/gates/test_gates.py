@@ -339,6 +339,13 @@ class TestGatesAndWorkspace(unittest.TestCase):
         self.assertTrue(ok)
         self.assertIn("validated 1 JSON file", message)
 
+    def test_read_neo_version(self):
+        """Verify read_neo_version parses neo_version correctly from gradle.properties."""
+        props = self.test_dir / "gradle.properties"
+        props.write_text("neo_version=21.1.234\n", encoding="utf-8")
+        self.assertEqual("21.1.234", static_gate.read_neo_version(self.test_dir))
+        self.assertEqual(234, static_gate.parse_neo_patch_version("21.1.234"))
+
     def test_datagen_git_changes_are_scoped(self):
         """Reproducibility status ignores unrelated developer changes."""
         subprocess.run(

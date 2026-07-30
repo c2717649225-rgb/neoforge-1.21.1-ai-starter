@@ -30,7 +30,8 @@ last_verified: 2026-07-30
 ## 🚀 7 阶段步进 SOP 详细执行流程
 
 ### Phase 1: 基础骨架与资源先行 (Foundation & Assets First)
-1. 先建立包结构，将贴图与资源文件原样迁移至 `src/main/resources/assets/<modid>/textures/`；
+1. 先建立包结构，将贴图与资源文件迁移至 `src/main/resources/assets/<modid>/textures/`；
+   - 🚨 **老模组移植 P0 物理红线**：1.21.1 原版与 DataGen 强制要求使用**单数目录**（`textures/block/` 与 `textures/item/`）。老模组移植第一动作必须将旧版 `textures/blocks/` 重命名为 `block/`、`textures/items/` 重命名为 `item/`，杜绝 200+ 条纹理缺失警报；
 2. 完成 `DeferredRegister` 对 Item/Block/CreativeTab 的声明与注册；
 3. 执行 `python .agents/run.py .agents/gates/pipeline.py --profile fast` 验证 L2.5 资源对账；
 4. **Git Commit**: `feat(phase1): foundation & assets for <modid>`
@@ -48,24 +49,34 @@ last_verified: 2026-07-30
 4. **Git Commit**: `feat(phase3): data components & persistence for <modid>`
 
 ### Phase 4: 能力对接与底层切面 (Capabilities & Mixins)
-1. 注册 FE 能量 (`Capabilities.EnergyStorage.BLOCK`)、流体与 `IItemHandler`；
-2. 如有 Mixin 切面，完成注入并在沙盒中自检方法签名；
+1. 在 `RegisterCapabilitiesEvent` 统一注册 `Capabilities.ItemHandler.BLOCK` / `ENERGY` / `FLUID_HANDLER`；
+2. 编写必要的 Mixin 切面（严格限制暴露范围，必须使用 `@Unique` 私有辅助）；
 3. **Git Commit**: `feat(phase4): capabilities & mixins for <modid>`
 
-### Phase 5: 实体、投掷物与 AI 行为 (Entities, Projectiles & Mob AI)
-1. 注册 `EntityType` 与对应的弹道/Boss 实体类；
-2. 在 `Dist.CLIENT` 侧注册 `EntityRenderer` 与 `EntityModel`；
-3. 编写 `GoalSelector` AI 寻找逻辑；
-4. **Git Commit**: `feat(phase5): entities & ai for <modid>`
+### Phase 5: 实体、投掷物与 AI 行为 (Entities & Projectiles)
+1. 注册 `EntityType` 与 `Mob` / `ThrowableItemProjectiles`；
+2. 在 `EntityRenderersEvent.RegisterRenderers` 注册渲染器；
+3. 在 `EntityAttributeCreationEvent` 绑定生命值与移动速度等默认属性；
+4. **Git Commit**: `feat(phase5): custom entities & AI for <modid>`
 
-### Phase 6: 世界生成与结构集 (Worldgen & Structures)
-1. 配置 `PlacedFeature` 矿石/植物生成数据；
-2. 编写 Jigsaw 结构代码（使用 1.21.1 最新 11 参数 `JigsawPlacement.addPieces` 签名）；
-3. **Git Commit**: `feat(phase6): worldgen & structures for <modid>`
+### Phase 6: 世界生成与结构 (Worldgen & Structures)
+1. 在 `data/<modid>/worldgen/` 放置 `configured_feature` 与 `placed_feature`；
+2. 配置 Jigsaw 结构 Pools 与模板模板图；
+3. **Git Commit**: `feat(phase6): worldgen & jigsaw structures for <modid>`
 
-### Phase 7: UI 界面、网络同步与验收 (Menu, Screen, Payloads & GameTest)
-1. 实现 `AbstractContainerMenu` 并在服务端挂载 `DataSlot` 同步属性；
-2. 注册 `CustomPacketPayload` 与 `PayloadRegistrar` 组装 C2S/S2C 字节流；
-3. 编写针对核心逻辑的 `@GameTest`；
-4. **全量过关**: `python .agents/run.py .agents/gates/pipeline.py --profile fast`（或 `--profile major`）；
-5. **Git Commit**: `feat(phase7): ui, network & gametest for <modid>`
+### Phase 7: 界面、网络与 GameTest 验证 (UI, Network & Validation)
+1. 编写 `AbstractContainerMenu` 与 `AbstractContainerScreen` 客户端绑定；
+2. 使用 `PayloadRegistrar` 注册 `CustomPacketPayload`（默认主线程执行）；
+3. 编写针对新增核心机制的独立 `@GameTest`；
+4. 执行全量 Quality Pipeline `python .agents/run.py .agents/gates/pipeline.py --profile release`；
+5. **Git Commit**: `feat(phase7): UI, network payloads & GameTest verification for <modid>`
+
+---
+
+## 🤖 多 Agent 协作与子代理 (Subagent) 并行审计指南
+
+在大型或复杂老模组移植任务中，可以使用 `invoke_subagent` 派生子代理进行并行审计与开发。为防止多 Agent 冲突，须遵守以下规则：
+
+1. **适用场景**：适合在 Phase 2 (配方/掉落表)、Phase 3 (数据组件/BlockEntity 存盘) 与 Phase 4 (Capabilities) 中进行纯只读源码审计与框架规划；
+2. **写码隔离原则**：禁止多个 Agent 同时编辑同一个 Java 源文件或同一个 DataGen 类；子代理必须严格按照包名/文件路径隔离分工（如 Agent A 负责 `com.example.block.entity`，Agent B 负责 `com.example.datagen`）；
+3. **主 Agent 汇总机制**：子代理审计完成后，必须将生成的逻辑映射或小 Patch 回传给主 Agent，由主 Agent 统一执行编译与门禁校验（L1~L4）。
