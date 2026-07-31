@@ -382,9 +382,10 @@ def check_model_references(view: ResourceView, ns: str) -> List[Finding]:
     for plural_dir in ["blocks", "items"]:
         legacy_pngs = view.glob(f"assets/{ns}/textures/{plural_dir}/**/*.png")
         if legacy_pngs:
-            add("legacy_plural_texture_directory", "error", f"assets/{ns}/textures/{plural_dir}/",
+            add("legacy_plural_texture_directory", "warning", f"assets/{ns}/textures/{plural_dir}/",
                 f"Legacy 1.20.x plural texture directory `textures/{plural_dir}/` detected ({len(legacy_pngs)} PNGs). "
-                f"1.21.1+ requires singular `textures/{plural_dir[:-1]}/`. Rename directory to prevent 226+ client atlas missing texture warnings.")
+                f"Block/item model textures should use singular `textures/{plural_dir[:-1]}/`. "
+                "Move model textures and update their references; review manually loaded GUI/renderer textures before moving them.")
 
     return findings
 

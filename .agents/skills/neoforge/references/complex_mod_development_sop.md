@@ -31,52 +31,41 @@ last_verified: 2026-07-30
 
 ### Phase 1: 基础骨架与资源先行 (Foundation & Assets First)
 1. 先建立包结构，将贴图与资源文件迁移至 `src/main/resources/assets/<modid>/textures/`；
-   - 🚨 **老模组移植 P0 物理红线**：1.21.1 原版与 DataGen 强制要求使用**单数目录**（`textures/block/` 与 `textures/item/`）。老模组移植第一动作必须将旧版 `textures/blocks/` 重命名为 `block/`、`textures/items/` 重命名为 `item/`，杜绝 200+ 条纹理缺失警报；
+   - **老模组移植资源规则**：1.21.1 方块与物品纹理使用单数目录 `textures/block/` 与 `textures/item/`。移植第一步将旧版 `textures/blocks/`、`textures/items/` 分别迁移为 `block/`、`item/`，并同步更新模型和 DataGen 引用；
 2. 完成 `DeferredRegister` 对 Item/Block/CreativeTab 的声明与注册；
 3. 执行 `python .agents/run.py .agents/gates/pipeline.py --profile fast` 验证 L2.5 资源对账；
-4. **Git Commit**: `feat(phase1): foundation & assets for <modid>`
 
 ### Phase 2: 配方树与数据生成 (Custom Recipe Systems & DataGen)
 1. 编写自定义 `RecipeType` 与 `RecipeSerializer`（若有）；
 2. 继承 `RecipeProvider` 与 `LootTableProvider` 完成 DataGen Provider 写码（拒绝空实现）；
 3. 执行 `./gradlew runData` 验证 JSON 物理产出；
-4. **Git Commit**: `feat(phase2): custom recipes & datagen for <modid>`
 
 ### Phase 3: 数据组件与持久化 (Data Components & BlockEntity)
 1. 注册 1.21.1 `DataComponentType`（禁止 1.20.x NBT `getOrCreateTag`）；
 2. 编写 `BlockEntity` / `SavedData` 的 `loadAdditional` 和 `saveAdditional` 读写路径；
 3. 静态门禁防范：确认静态块/字段中无 eager `.get()` 延迟解包隐患；
-4. **Git Commit**: `feat(phase3): data components & persistence for <modid>`
 
 ### Phase 4: 能力对接与底层切面 (Capabilities & Mixins)
-1. 在 `RegisterCapabilitiesEvent` 统一注册 `Capabilities.ItemHandler.BLOCK` / `ENERGY` / `FLUID_HANDLER`；
+1. 在 `RegisterCapabilitiesEvent` 统一注册 `Capabilities.ItemHandler.BLOCK`、`Capabilities.EnergyStorage.BLOCK` 与 `Capabilities.FluidHandler.BLOCK`；
 2. 编写必要的 Mixin 切面（严格限制暴露范围，必须使用 `@Unique` 私有辅助）；
-3. **Git Commit**: `feat(phase4): capabilities & mixins for <modid>`
 
 ### Phase 5: 实体、投掷物与 AI 行为 (Entities & Projectiles)
-1. 注册 `EntityType` 与 `Mob` / `ThrowableItemProjectiles`；
+1. 注册 `EntityType` 与对应的 `Mob` / `ThrowableItemProjectile` 实现；
 2. 在 `EntityRenderersEvent.RegisterRenderers` 注册渲染器；
 3. 在 `EntityAttributeCreationEvent` 绑定生命值与移动速度等默认属性；
-4. **Git Commit**: `feat(phase5): custom entities & AI for <modid>`
 
 ### Phase 6: 世界生成与结构 (Worldgen & Structures)
 1. 在 `data/<modid>/worldgen/` 放置 `configured_feature` 与 `placed_feature`；
-2. 配置 Jigsaw 结构 Pools 与模板模板图；
-3. **Git Commit**: `feat(phase6): worldgen & jigsaw structures for <modid>`
+2. 配置 Jigsaw template pool 与结构模板；
 
 ### Phase 7: 界面、网络与 GameTest 验证 (UI, Network & Validation)
 1. 编写 `AbstractContainerMenu` 与 `AbstractContainerScreen` 客户端绑定；
 2. 使用 `PayloadRegistrar` 注册 `CustomPacketPayload`（默认主线程执行）；
 3. 编写针对新增核心机制的独立 `@GameTest`；
-4. 执行全量 Quality Pipeline `python .agents/run.py .agents/gates/pipeline.py --profile release`；
-5. **Git Commit**: `feat(phase7): UI, network payloads & GameTest verification for <modid>`
+4. 阶段验收执行 `python .agents/run.py .agents/gates/pipeline.py --profile major`；只有准备发布时才运行 `--profile release`。
 
 ---
 
-## 🤖 多 Agent 协作与子代理 (Subagent) 并行审计指南
+## 移植审计产物
 
-在大型或复杂老模组移植任务中，可以使用 `invoke_subagent` 派生子代理进行并行审计与开发。为防止多 Agent 冲突，须遵守以下规则：
-
-1. **适用场景**：适合在 Phase 2 (配方/掉落表)、Phase 3 (数据组件/BlockEntity 存盘) 与 Phase 4 (Capabilities) 中进行纯只读源码审计与框架规划；
-2. **写码隔离原则**：禁止多个 Agent 同时编辑同一个 Java 源文件或同一个 DataGen 类；子代理必须严格按照包名/文件路径隔离分工（如 Agent A 负责 `com.example.block.entity`，Agent B 负责 `com.example.datagen`）；
-3. **主 Agent 汇总机制**：子代理审计完成后，必须将生成的逻辑映射或小 Patch 回传给主 Agent，由主 Agent 统一执行编译与门禁校验（L1~L4）。
+老模组移植开始前，使用 [`../../../scaffolds/porting/porting_audit.template.md`](../../../scaffolds/porting/porting_audit.template.md) 记录旧版行为、源码依据、现代 API 映射、资源来源和已知偏差。Major 验收项与 GameTest 追踪仍写入 `docs/features/*.contract.json`，不要建立第二套合同。

@@ -2,7 +2,7 @@
 status: verified
 pin_minecraft: 1.21.1
 pin_neo: 21.1.x
-last_verified: 2026-07-27
+last_verified: 2026-07-30
 ---
 # NeoForge 1.21.1 Block Entities Guide
 
@@ -262,9 +262,9 @@ public class ModCapabilityRegistrar {
 科技或熔炼机器在工作时（如发电机燃烧、熔炉冶炼），需要改变方块外观（如发出亮光、正面材质发红、冒烟）。在 Minecraft 中，这通过方块状态属性 `BlockStateProperties.LIT`（是否点亮）实现。
 
 > [!WARNING]
-> **性能致命红线**：
+> **性能风险**：
 > 改变方块状态（`level.setBlock`）会强制客户端**重新渲染当前区块（Chunk Redraw）**。
-> 如果您在方块实体的 `tick()` 逻辑中，每 tick 都无条件调用 `level.setBlock` 切换状态，**会导致客户端帧率（FPS）瞬间跌个位数，产生极其严重的卡顿！**
+> 如果在方块实体的 `tick()` 中每 tick 无条件调用 `level.setBlock`，会产生不必要的区块更新和重绘，放置数量增加后可能造成明显卡顿。
 > 必须使用以下**“差值防抖切换算法”**：仅在状态真正发生变化（如从工作切换为停机，或反之）的 tick，才调用一次 `setBlock`。
 
 ### 7.1 朝向与 LIT 机器方块定义
@@ -385,5 +385,4 @@ public class MyMachineBlockEntity extends BlockEntity {
     }
 }
 ```
-通过这种**状态属性对比切换算法**，您的机器不仅拥有完美的火焰音效和冒烟粒子，还能保障服务器和客户端 100% 毫无卡顿地运行。
-
+状态仅在实际变化时写回，可避免每 tick 重复触发方块更新和客户端区块重绘；实际性能仍应通过目标场景分析验证。

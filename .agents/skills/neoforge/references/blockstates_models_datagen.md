@@ -1,9 +1,9 @@
 # NeoForge 1.21.1 材质、模型与掉落表数据生成 (DataGen) 指南
 
 > [!IMPORTANT]
-> **1.21.1 纹理路径硬性规范**：
-> 1.21.1 原版与 DataGen 强制要求贴图必须放在**单数目录**（`textures/block/` 与 `textures/item/`）。
-> **老模组移植警告**：旧版 (1.20.1-) 的复数路径（`textures/blocks/` 与 `textures/items/`）会导致 226+ 条纹理丢失紫黑格子告警，移植时第一动作必须重命名为单数目录！
+> **1.21.1 纹理路径规范**：
+> 方块与物品纹理使用单数目录 `textures/block/` 与 `textures/item/`。
+> 老模组移植时，将旧版复数路径 `textures/blocks/`、`textures/items/` 迁移为单数目录，并同步修改模型与 DataGen 引用，否则客户端会产生 missing texture / atlas 警告。
 
 > [!WARNING]
 > **⚠️ 示例包名禁原样粘贴**：

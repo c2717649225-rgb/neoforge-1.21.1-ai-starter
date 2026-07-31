@@ -547,6 +547,7 @@ def scan_file(
     findings: List[Finding] = []
     rel = path
     patch_ver = parse_neo_patch_version(neo_version)
+    masked_text = mask_java_comments_and_literals(text)
 
     # --- client_import_in_common ---
     # Exempt: path under **/client/** OR file explicitly Dist.CLIENT-isolated
@@ -689,8 +690,18 @@ def scan_file(
 
     # --- eventbus_redundant_bus_param: NeoForge 21.1.181+ redundant bus = Bus.MOD ---
     if patch_ver >= 181:
-        for m in re.finditer(r"@EventBusSubscriber\s*\(([^)]+)\)", text):
-            params = m.group(1)
+        for m in re.finditer(r"@EventBusSubscriber\s*\(", masked_text):
+            depth = 1
+            cursor = m.end()
+            while cursor < len(masked_text) and depth:
+                if masked_text[cursor] == "(":
+                    depth += 1
+                elif masked_text[cursor] == ")":
+                    depth -= 1
+                cursor += 1
+            if depth:
+                continue
+            params = masked_text[m.end():cursor - 1]
             if re.search(r"\bbus\s*=\s*(?:EventBusSubscriber\.)?Bus\.MOD\b", params):
                 findings.append(
                     Finding(
