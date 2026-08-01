@@ -1,6 +1,26 @@
 name: Build
 
-on: [push, pull_request]
+# Full Gradle + GameTestServer verification. Doc-only changes skip this job
+# (cheap pure-Python gates in agents.yml still cover them); code changes to
+# .agents/gates/** and src/** still trigger the full build on purpose, so
+# gate-core modifications get real-environment regression.
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.agents/_archive/**'
+      - '.agents/skills/**/references/**'
+      - '.agents/*.md'
+      - '.github/workflows/agents.yml'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.agents/_archive/**'
+      - '.agents/skills/**/references/**'
+      - '.agents/*.md'
+      - '.github/workflows/agents.yml'
 
 jobs:
   build:

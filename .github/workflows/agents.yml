@@ -40,6 +40,9 @@ jobs:
       - name: Syntax-check all toolkit scripts
         run: python -m compileall -q .agents/gates .agents/eval .agents/mcp .agents/skills/workspace_setup/scripts .agents/init_workspace.py
 
+      - name: Meta gate (toolkit code size)
+        run: python .agents/gates/meta_gate.py
+
       - name: Doc index gate
         run: python .agents/gates/check_doc_index.py
 
@@ -96,8 +99,78 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Syntax-check toolkit gates
-        run: python -m compileall -q .agents/gates .agents/eval
+      - name: Syntax-check all toolkit scripts
+        run: python -m compileall -q .agents/gates .agents/eval .agents/mcp .agents/skills/workspace_setup/scripts .agents/init_workspace.py
 
-      - name: Windows gate and process-cleanup tests
+      - name: Meta gate (toolkit code size)
+        run: python .agents/gates/meta_gate.py
+
+      - name: Doc index gate
+        run: python .agents/gates/check_doc_index.py
+
+      - name: Doc metadata gate
+        run: python .agents/gates/check_doc_meta.py
+
+      - name: Static gate on starter sources
+        run: python .agents/gates/static_gate.py
+
+      - name: Asset gate on starter resources
+        run: python .agents/gates/asset_gate.py --strict-datagen-layout --warnings-as-errors
+
+      - name: Validate any host Major contracts
+        run: python .agents/gates/contract_gate.py
+
+      - name: Discover any authored GameTests
+        run: python .agents/gates/gametest_gate.py
+
+      - name: Unit tests for gates and workspace
         run: python -m unittest discover -s .agents/gates -p "test_*.py"
+
+      - name: Unit tests for eval harness
+        run: python -m unittest discover -s .agents/eval -p "test_*.py"
+
+  portability:
+    # Verifies the "copy .agents/ into any 1.21.1 NeoForge host" product
+    # boundary: assemble a pristine skeleton host (with the metadata stubs
+    # the gates actually read), copy the toolkit in, and run the pure-Python
+    # gates from inside that host. Deliberately does NOT run L1 Gradle
+    # compile / GameTestServer here — that would burn a full build just to
+    # re-test the starter's own pipeline.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Assemble pristine skeleton host
+        run: |
+          set -eux
+          HOST="$RUNNER_TEMP/portability-host"
+          mkdir -p \
+            "$HOST/src/main/java/com/portability" \
+            "$HOST/src/main/resources/assets/portabilityhost/lang" \
+            "$HOST/src/generated/resources/assets/portabilityhost/lang" \
+            "$HOST/src/main/templates/META-INF" \
+            "$HOST/docs/features"
+          printf 'mod_id=portabilityhost\n' > "$HOST/gradle.properties"
+          printf 'package com.portability;\n' > "$HOST/src/main/java/com/portability/Host.java"
+          printf '{}\n' > "$HOST/src/main/resources/assets/portabilityhost/lang/zh_cn.json"
+          printf '{}\n' > "$HOST/src/generated/resources/assets/portabilityhost/lang/en_us.json"
+          printf 'modLoader="javafml"\nloaderVersion="[1,)"\nlicense="All Rights Reserved"\n[[mods]]\nmodId="portabilityhost"\nversion="0.0.0"\ndisplayName="Portability Host"\nauthors="Portability Test"\n' > "$HOST/src/main/templates/META-INF/neoforge.mods.toml"
+          cp -r .agents "$HOST/.agents"
+          find "$HOST/.agents" -name __pycache__ -type d -prune -exec rm -rf {} +
+
+      - name: Pure-Python gates on pristine host
+        run: |
+          set -eux
+          HOST="$RUNNER_TEMP/portability-host"
+          cd "$HOST"
+          python .agents/gates/check_doc_index.py
+          python .agents/gates/check_doc_meta.py
+          python .agents/gates/static_gate.py
+          python .agents/gates/asset_gate.py --strict-datagen-layout --warnings-as-errors
+          python .agents/gates/contract_gate.py
+          python .agents/gates/meta_gate.py
