@@ -36,6 +36,7 @@ BOOLEAN_OPTIONS = frozenset(
         "--warnings-as-errors",
         "--verify-data-clean",
         "--check-data-clean",
+        "--allow-dirty-worktree",
     }
 )
 VALUE_OPTIONS = frozenset({"--contract-root", "--gametest-timeout"})
@@ -387,10 +388,18 @@ def main():
     strict_traceability = "--strict-traceability" in sys.argv
     strict_datagen_layout = "--strict-datagen-layout" in sys.argv
     warnings_as_errors = "--warnings-as-errors" in sys.argv
+    allow_dirty_worktree = "--allow-dirty-worktree" in sys.argv
+    # --allow-dirty-worktree is an explicit opt-out for local release
+    # rehearsals: it downgrades the DataGen reproducibility hard check to a
+    # NOTE when the worktree is already dirty, WITHOUT weakening the check
+    # for real releases or CI (which never pass the flag).
     require_data_clean = (
-        "--verify-data-clean" in sys.argv
-        or "--check-data-clean" in sys.argv
-        or is_ci_environment()
+        (
+            "--verify-data-clean" in sys.argv
+            or "--check-data-clean" in sys.argv
+            or is_ci_environment()
+        )
+        and not allow_dirty_worktree
     )
     try:
         contract_root = cli_option_value(

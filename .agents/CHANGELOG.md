@@ -16,6 +16,7 @@
 - **`check_update.py`**：对比上游新版与本地定制版两个 `.agents/` 目录，输出"上游改了哪些 / 你改了哪些 / 冲突文件清单"，升级前运行一次；内容比较做 CRLF 规范化，Windows 下不会因换行符误报整文件改动。
 - **`environment_check.py`**：环境自检工具——诊断默认 `python` 版本、PATH 中 python 条目顺序与 py launcher 可用版本，输出分级结论与安全修复指引（`PY_PYTHON` / 系统 PATH 重排 / `run.py` 兜底）；标准库实现。
 - **`run.py` 兜底提示**：当默认 `python` 过旧、启动器不得不选用兜底解释器时，向 stderr 打印一次性环境修复提示（保持 3.6 兼容语法，功能与退出码不变）。
+- **`--allow-dirty-worktree` 发布演练开关**：`pipeline.py` 与 `compile_and_repair.py` 新增显式 opt-out——本地 `--profile release` 演练时允许脏 Git 工作区继续（DataGen 可复现性硬检查降级为 NOTE），真实 release 与 CI 默认严格行为完全不变；非 release profile 使用该 flag 会报错。
 
 ### 破坏性变更
 - 无（本次全部为增量变更，向后兼容）。

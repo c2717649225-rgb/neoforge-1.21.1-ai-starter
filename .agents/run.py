@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
 MIN_VERSION = (3, 10)
 

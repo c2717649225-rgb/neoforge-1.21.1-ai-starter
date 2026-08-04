@@ -295,7 +295,8 @@ These techniques are part of systematic debugging and available in this director
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
 
 **可选相关链接 (已归档):**
-- *注：通用测试概念 TDD 与验证技能已移入 `_archive/superpowers-optional/` 归档备份中，本仓模组开发一律直接使用 compile_and_repair.py 进行编译自测试。*
+- *注：通用前端/过程测试脚本已解耦移除，本仓模组开发一律直接使用 compile_and_repair.py 进行编译与门禁自测。*
+
 
 ## Real-World Impact
 

@@ -52,7 +52,7 @@ neoforge-1.21.1-ai-starter/
 | `task_monitor` | 按需：长 Gradle/Git 任务防假死监控 |
 
 > [!NOTE]
-> 过程型 skills（`brainstorming`、`test-driven-development`、多代理等）已移入 `.agents/_archive/`，**非默认路径、默认禁止加载**（口径见 [`.agents/AGENTS.md`](.agents/AGENTS.md) 部分三）。交付前的编译/静态证据要求已并入 `AGENTS.md` 的「完成证据协议」。
+> 过程型 skills（`brainstorming`、`test-driven-development`、多代理等）已解耦移除（口径见 [`.agents/AGENTS.md`](.agents/AGENTS.md) 部分三）。交付前的编译/静态证据要求已并入 `AGENTS.md` 的「完成证据协议」。
 
 ---
 
@@ -136,9 +136,7 @@ L4 同时核对官方注解的编译后字节码、外置运行时事件和精�
 ├── contracts/          # Major 功能合同通用 Schema（实际合同放宿主 docs/features）
 ├── scaffolds/          # Major 合同 / GameTest 防假绿脚手架
 ├── gates/              # pipeline + L0/L1/L2/L2.5/L4/追踪/L3 门禁
-├── studio/             # provisional 外置证据、执行策略、Runner 与 Verifier
 ├── eval/               # 微能力批卷 + 六场景旗舰生产评测
-├── _archive/           # 禁读归档（过程型 superpowers 等）
 └── skills/
     ├── neoforge/             # ★ 1.21.1 写法与 references
     ├── workspace_setup/      # 初始化与改名引擎
@@ -186,7 +184,7 @@ L4 同时核对官方注解的编译后字节码、外置运行时事件和精�
 | systematic-debugging | 按需：根因优先的系统化排错（含崩溃报告分析） |
 | task_monitor | 按需：长 Gradle/Git 后台任务防假死监控 |
 
-过程型 skills（brainstorming、writing-plans、test-driven-development、code-review 系列等）已整体移入 [`_archive/`](.agents/_archive/)，非默认路径、默认禁止加载；说明见 [`_archive/README.md`](.agents/_archive/README.md)。
+过程型 skills（brainstorming、writing-plans、test-driven-development、code-review 系列等）已整体解耦移除，默认不载入上下文。
 
 </details>
 

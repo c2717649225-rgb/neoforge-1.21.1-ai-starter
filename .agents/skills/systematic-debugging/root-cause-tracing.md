@@ -98,7 +98,7 @@ npm test 2>&1 | grep 'DEBUG git init'
 
 If something appears during tests but you don't know which test:
 
-*注：由于本仓库解耦了 Jest 等通用前端测试，原 test pollution 脚本 `find-polluter.sh` 已被移动至 `_archive/superpowers-noise/` 归档下，在此跳过此辅助脚本。*
+*注：由于本仓库专注于 Minecraft 模组逻辑开发，通用的 `find-polluter.sh` 辅助脚本已解耦移除。*
 
 ## Real Example: Empty projectDir
 

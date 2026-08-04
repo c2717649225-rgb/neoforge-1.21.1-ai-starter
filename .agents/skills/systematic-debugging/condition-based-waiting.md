@@ -79,7 +79,7 @@ async function waitFor<T>(
 }
 ```
 
-*注：由于本仓库专注于 Minecraft 模组逻辑开发，通用的 `condition-based-waiting-example.ts` 异步测试等待示例已被物理移动至 `_archive/superpowers-noise/` 备份下，在此跳过。*
+*注：由于本仓库专注于 Minecraft 模组逻辑开发，通用的 `condition-based-waiting-example.ts` 异步测试等待示例已解耦移除。*
 
 ## Common Mistakes
 

@@ -72,13 +72,11 @@ python .agents/run.py --version
 | [contracts/](./contracts/) | Major 功能通用 JSON Schema；宿主实际合同放 `docs/features/` |
 | [scaffolds/](./scaffolds/) | Major 合同与 GameTest 的防假绿脚手架 |
 | [scaffolds/porting/](./scaffolds/porting/) | 老模组移植语义审计模板；验收仍复用 Major 合同 |
-| [studio/](./studio/) | provisional 执行策略、外置哈希链证据账本、封存 Runner 与独立 Verifier |
 | [eval/](./eval/) | T01–T07 微能力回归 + 六场景旗舰生产评测协议 |
 | [skills/neoforge/](./skills/neoforge/) | 领域知识：SKILL 索引、references、examples、playbooks |
 | [skills/workspace_setup/](./skills/workspace_setup/) | 初始化与改名（`init_workspace.py` 确定性重构引擎） |
 | [skills/systematic-debugging/](./skills/systematic-debugging/) | 按需：排障 |
 | [skills/task_monitor/](./skills/task_monitor/) | 按需：长任务监控 |
-| [_archive/](./_archive/) | **禁读归档**（见其 README）；非默认 skill |
 
 ---
 
@@ -86,21 +84,7 @@ python .agents/run.py --version
 
 - **勿提交**：`mcp/mcp_jar_cache.json`、`mcp/mcp_error.log`、任意 `__pycache__` / `.env`。  
 - **勿写本机绝对路径**进工具包文档（MCP 配置示例用占位符）。  
-- **勿加载** `_archive/` 内 skill，除非用户明确要求。  
 - 拷贝到其他工程时：复制整个 `.agents/` 即可；MCP 会按新工程根目录重扫依赖。
-
----
-
-## 默认 skill 白名单
-
-日常仅允许：
-
-1. `neoforge`  
-2. `workspace_setup`  
-3. `systematic-debugging`（按需）  
-4. `task_monitor`（按需）
-
-过程型 superpowers 等已归档，不在默认路径。
 
 ---
 

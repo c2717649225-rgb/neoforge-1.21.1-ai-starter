@@ -58,6 +58,13 @@ class TestGatesAndWorkspace(unittest.TestCase):
             ]
         )
 
+    def test_compile_cli_accepts_allow_dirty_worktree(self):
+        # regression: the release-rehearsal opt-out must pass validation
+        compile_and_repair.validate_cli_arguments(["--allow-dirty-worktree"])
+        compile_and_repair.validate_cli_arguments(
+            ["--verify-data-clean", "--allow-dirty-worktree", "--with-server"]
+        )
+
     def test_compile_cli_rejects_nonfinite_timeout(self):
         for value in ("nan", "inf", "-inf", "0", "-1"):
             with self.subTest(value=value):

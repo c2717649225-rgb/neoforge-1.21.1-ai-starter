@@ -111,6 +111,18 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual("flagship benchmark suite integrity", plan[-1].name)
         self.assertEqual("validate-suite", plan[-1].command[-1])
 
+    def test_release_with_allow_dirty_worktree_drops_clean_check(self):
+        plan = pipeline.build_plan(
+            self.temp_dir, "release", allow_dirty_worktree=True
+        )
+        quality = plan[-2].command
+        self.assertIn("--allow-dirty-worktree", quality)
+        self.assertNotIn("--verify-data-clean", quality)
+        self.assertIn("--with-server", quality)
+        # default stays strict: the opt-out must not weaken normal releases
+        strict = pipeline.build_plan(self.temp_dir, "release")
+        self.assertIn("--verify-data-clean", strict[-2].command)
+
     def test_dry_run_writes_report_without_launching(self):
         report = self.temp_dir / "reports" / "pipeline.json"
         with mock.patch.object(pipeline, "run_step") as run_step:

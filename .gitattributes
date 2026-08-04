@@ -3,3 +3,6 @@
 # are changed when only line endings change.
 src/generated/**/.cache/* text eol=lf
 src/generated/**/*.json text eol=lf
+# Hand-authored resources too: JSON must stay LF regardless of the
+# checkout platform, otherwise CRLF editors produce noisy diffs.
+src/main/resources/**/*.json text eol=lf

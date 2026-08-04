@@ -75,6 +75,7 @@ def build_plan(
     gametest_timeout: float = 900.0,
     strict_traceability: bool = False,
     allow_reference_host_only: bool = False,
+    allow_dirty_worktree: bool = False,
 ) -> list[PlannedStep]:
     """Build the exact argv plan for a profile without executing it."""
     if profile not in PROFILE_NAMES:
@@ -128,7 +129,12 @@ def build_plan(
         if allow_reference_host_only:
             quality_command.append("--allow-reference-host-only")
     if profile == "release":
-        quality_command.extend(["--verify-data-clean", "--with-server"])
+        if allow_dirty_worktree:
+            quality_command.extend(
+                ["--allow-dirty-worktree", "--with-server"]
+            )
+        else:
+            quality_command.extend(["--verify-data-clean", "--with-server"])
 
     plan.append(PlannedStep(f"{profile} quality gates", quality_command))
 
@@ -494,6 +500,53 @@ def append_ledger_event(ledger_path: Path, payload: dict, report_path: Path) -> 
 
 
 
+def _check_client_and_git_hygiene(project_dir: Path) -> None:
+    """Print notices for client-side rendering changes or untracked Java files."""
+    try:
+        status_proc = subprocess.run(
+            ["git", "-C", str(project_dir), "status", "--porcelain"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        if status_proc.returncode != 0:
+            return
+        lines = status_proc.stdout.splitlines()
+
+        # Check for untracked Java sources
+        untracked_java = [
+            l[3:].strip() for l in lines if l.startswith("??") and l[3:].strip().startswith("src/main/java/")
+        ]
+        if untracked_java:
+            print("--------------------------------------------------")
+            print(f"⚠ GIT HYGIENE NOTICE: {len(untracked_java)} untracked Java file(s) in src/main/java/:")
+            for f in untracked_java[:5]:
+                print(f"    - {f}")
+            if len(untracked_java) > 5:
+                print(f"    - ... (+{len(untracked_java) - 5} more)")
+            print("  Remember to run 'git add' to track core source files and prevent work loss.")
+
+        # Check for client-side modifications
+        client_keywords = ("client/", "/client/", "render/", "/render/", "models/", "lang/", "screen/", "/screen/")
+        changed_client_files = [
+            l[3:].strip() for l in lines if any(kw in l for kw in client_keywords)
+        ]
+        if changed_client_files:
+            print("--------------------------------------------------")
+            print("⚠ CLIENT RENDER NOTICE: Modifications to client-side files detected:")
+            for f in changed_client_files[:5]:
+                print(f"    - {f}")
+            if len(changed_client_files) > 5:
+                print(f"    - ... (+{len(changed_client_files) - 5} more)")
+            print("  L4 GameTest runs on a headless server and CANNOT verify GUI/models/tooltips.")
+            print("  Please run 'gradlew runClient' to manually verify visual rendering.")
+            print("--------------------------------------------------")
+    except Exception:
+        pass
+
+
 def parser() -> argparse.ArgumentParser:
     command_parser = argparse.ArgumentParser(
         description="Run a fail-closed NeoForge quality profile."
@@ -563,6 +616,13 @@ def parser() -> argparse.ArgumentParser:
         action="store_true",
         help="print the exact plan without running commands",
     )
+    command_parser.add_argument(
+        "--allow-dirty-worktree",
+        action="store_true",
+        help="release rehearsal only: allow a dirty Git worktree by "
+        "downgrading the DataGen reproducibility hard check to a NOTE "
+        "(real releases and CI never pass this flag).",
+    )
     return command_parser
 
 
@@ -595,6 +655,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         command_parser.error(
             "--allow-reference-host-only requires --profile major or release"
         )
+    if args.allow_dirty_worktree and args.profile != "release":
+        command_parser.error(
+            "--allow-dirty-worktree is only meaningful with --profile release"
+        )
 
     project_dir = args.project_dir.resolve()
     contract_root = None
@@ -611,6 +675,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         gametest_timeout=args.gametest_timeout,
         strict_traceability=args.strict_traceability,
         allow_reference_host_only=args.allow_reference_host_only,
+        allow_dirty_worktree=args.allow_dirty_worktree,
     )
     started_at = datetime.now(timezone.utc).isoformat()
     started = time.monotonic()
@@ -659,6 +724,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         )
     elif passed:
         print(f"PIPELINE PASS: profile '{args.profile}'.")
+        _check_client_and_git_hygiene(project_dir)
 
     payload = report_payload(
         project_dir=project_dir,

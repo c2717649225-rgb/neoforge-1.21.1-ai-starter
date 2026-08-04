@@ -9,7 +9,6 @@ on:
     paths-ignore:
       - 'docs/**'
       - '*.md'
-      - '.agents/_archive/**'
       - '.agents/skills/**/references/**'
       - '.agents/*.md'
       - '.github/workflows/agents.yml'
@@ -17,7 +16,6 @@ on:
     paths-ignore:
       - 'docs/**'
       - '*.md'
-      - '.agents/_archive/**'
       - '.agents/skills/**/references/**'
       - '.agents/*.md'
       - '.github/workflows/agents.yml'

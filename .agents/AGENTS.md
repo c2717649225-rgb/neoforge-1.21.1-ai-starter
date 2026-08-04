@@ -52,9 +52,10 @@
 2. **任务分级**：
    - **Minor**：直接写码 + 门禁，禁止空转。
    - **Major**（实体/网络/Mixin/世界生成/存档格式/大重构）：先短方案，并用 `.agents/scaffolds/major_feature/` 在宿主 `docs/features/` 固化机器可检查合同；确认后再写。
-3. **白名单 skill**（仅此 4 个；`_archive/` **禁止加载**）：
+3. **白名单 skill**（仅此 4 个）：
    - `neoforge` / `workspace_setup` / `systematic-debugging`（按需）/ `task_monitor`（按需）
-4. **外部双 Agent**：以用户提示与本文件为准；勿复活归档 superpowers 链。协作文档外置，禁止本机绝对路径写入工具包。
+4. **外部双 Agent**：以用户提示与本文件为准；独立自治开发。协作文档外置，禁止本机绝对路径写入工具包。
+
 5. **门禁命令**：
 - 一键档位: `python .agents/run.py .agents/gates/pipeline.py --profile fast|major|release`
 - 索引自检: `python .agents/run.py .agents/gates/check_doc_index.py`
