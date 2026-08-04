@@ -16,7 +16,7 @@ from pathlib import Path
 
 WARN_THRESHOLD = 1500
 FAIL_THRESHOLD = 2500
-EXCLUDED_DIRS = {"__pycache__", "_archive"}
+EXCLUDED_DIRS = {"__pycache__"}
 
 
 def iter_py_files(root: Path):

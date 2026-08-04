@@ -62,8 +62,20 @@ class TestGatesAndWorkspace(unittest.TestCase):
         # regression: the release-rehearsal opt-out must pass validation
         compile_and_repair.validate_cli_arguments(["--allow-dirty-worktree"])
         compile_and_repair.validate_cli_arguments(
-            ["--verify-data-clean", "--allow-dirty-worktree", "--with-server"]
+            ["--allow-dirty-worktree", "--with-server"]
         )
+
+    def test_compile_cli_rejects_dirty_and_verify_clean_combination(self):
+        # mutually exclusive: the opt-out must not be combined with the hard
+        # DataGen reproducibility check it is meant to downgrade
+        with self.assertRaisesRegex(ValueError, "cannot be combined"):
+            compile_and_repair.validate_cli_arguments(
+                ["--verify-data-clean", "--allow-dirty-worktree", "--with-server"]
+            )
+        with self.assertRaisesRegex(ValueError, "cannot be combined"):
+            compile_and_repair.validate_cli_arguments(
+                ["--check-data-clean", "--allow-dirty-worktree"]
+            )
 
     def test_compile_cli_rejects_nonfinite_timeout(self):
         for value in ("nan", "inf", "-inf", "0", "-1"):

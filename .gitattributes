@@ -6,3 +6,7 @@ src/generated/**/*.json text eol=lf
 # Hand-authored resources too: JSON must stay LF regardless of the
 # checkout platform, otherwise CRLF editors produce noisy diffs.
 src/main/resources/**/*.json text eol=lf
+# Minecraft resource formats: keep LF regardless of checkout platform
+pack.mcmeta text eol=lf
+*.snbt text eol=lf
+neoforge.mods.toml text eol=lf

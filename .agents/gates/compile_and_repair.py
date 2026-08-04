@@ -178,6 +178,17 @@ def validate_cli_arguments(argv: List[str]) -> None:
             continue
         raise ValueError(f"unknown argument: {argument}")
 
+    # Mutually exclusive: --allow-dirty-worktree is an explicit opt-out that
+    # downgrades the DataGen reproducibility hard check to a NOTE; asking for
+    # the hard check at the same time is contradictory.
+    if "--allow-dirty-worktree" in argv and (
+        "--verify-data-clean" in argv or "--check-data-clean" in argv
+    ):
+        raise ValueError(
+            "--allow-dirty-worktree cannot be combined with "
+            "--verify-data-clean/--check-data-clean"
+        )
+
 
 def positive_finite_float(text: Optional[str], option: str) -> float:
     try:

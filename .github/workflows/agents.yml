@@ -12,7 +12,7 @@ on:
       - 'src/main/resources/**'
       - 'src/generated/resources/**'
       - 'src/main/templates/**'
-      - 'docs/features/**'
+      - 'docs/**'
       - 'gradle.properties'
       - '.github/workflows/agents.yml'
   pull_request:
@@ -22,7 +22,7 @@ on:
       - 'src/main/resources/**'
       - 'src/generated/resources/**'
       - 'src/main/templates/**'
-      - 'docs/features/**'
+      - 'docs/**'
       - 'gradle.properties'
       - '.github/workflows/agents.yml'
 
@@ -38,7 +38,7 @@ jobs:
           python-version: '3.10'
 
       - name: Syntax-check all toolkit scripts
-        run: python -m compileall -q .agents/gates .agents/eval .agents/mcp .agents/skills/workspace_setup/scripts .agents/init_workspace.py
+        run: python -m compileall -q .agents/gates .agents/eval .agents/mcp .agents/tools .agents/skills/workspace_setup/scripts .agents/init_workspace.py
 
       - name: Meta gate (toolkit code size)
         run: python .agents/gates/meta_gate.py
@@ -100,7 +100,7 @@ jobs:
           python-version: '3.10'
 
       - name: Syntax-check all toolkit scripts
-        run: python -m compileall -q .agents/gates .agents/eval .agents/mcp .agents/skills/workspace_setup/scripts .agents/init_workspace.py
+        run: python -m compileall -q .agents/gates .agents/eval .agents/mcp .agents/tools .agents/skills/workspace_setup/scripts .agents/init_workspace.py
 
       - name: Meta gate (toolkit code size)
         run: python .agents/gates/meta_gate.py
@@ -174,3 +174,4 @@ jobs:
           python .agents/gates/asset_gate.py --strict-datagen-layout --warnings-as-errors
           python .agents/gates/contract_gate.py
           python .agents/gates/meta_gate.py
+          python .agents/run.py .agents/gates/lang_key_gate.py
