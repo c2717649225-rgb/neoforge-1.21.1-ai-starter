@@ -12,3 +12,4 @@ architecture_design.md
 quality_bar.md
 design_intake.md
 complex_mod_development_sop.md
+client_data_sync.md

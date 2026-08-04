@@ -77,6 +77,7 @@ description: >
 | 自定义网络数据包 (Payloads) 与 StreamCodec | [references/network_payloads.md](references/network_payloads.md) |
 | 高维架构设计、模组间解耦与并发安全机制 | [references/architecture_design.md](references/architecture_design.md) |
 | 容器 GUI 菜单、屏幕 (Menus, Screens) | [references/menus_screens.md](references/menus_screens.md) |
+| 1.21.1 客户端数据同步与渲染避坑 (Client Sync & Rendering) | [references/client_data_sync.md](references/client_data_sync.md) |
 | 配置文件 (Config specs) 与 TOML 重载监听 | [references/configuration.md](references/configuration.md) |
 | 模组访问转换器 (Access Transformers) 配置 | [references/access_transformers.md](references/access_transformers.md) |
 | 常见模组开发反模式与规避指南 (Anti-Patterns) | [references/anti_patterns.md](references/anti_patterns.md) |

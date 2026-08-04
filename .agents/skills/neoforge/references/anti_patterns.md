@@ -158,3 +158,5 @@ last_verified: 2026-07-27
 | 2026-07-27 | verified 文档把 Payload Handler 默认线程写反，并把 `@EventBusSubscriber` 的新版自动分流扩大到全部 21.1.x | 用单一依赖版本验证后却声明整个小版本系列通用，且缺少错误语义回归测试 | Payload 改为“默认 MAIN、显式 NETWORK 才回主线程”；事件总线按 21.1.180/181 分界；新增真值测试与 VERSION pin 门禁 |
 | 2026-07-27 | RecordCodecBuilder 规则把“group 对齐工厂参数”误写成“永远对齐 record 声明顺序”，并绝对化为必然 ClassCastException | 把常用 `Record::new` 模式误当 API 的唯一合法工厂形式 | 允许显式适配 lambda；文档和静态门禁只检查可证明的 `Record::new` 映射错位 |
 | 2026-07-30 | 21.1.181+ 移植代码沿用旧版显式 `bus = Bus.MOD` 参数 | 21.1.0～21.1.180 的订阅写法被机械延续到新版 | `static_gate.py` 按宿主 `neo_version` 对 21.1.181+ 冗余参数给出 Warning |
+| 2026-08-02 | BlockEntity 数据更新使用相同 BlockState 导致原版 `Level` 自动阻断更新包 | 旧 state 与新 state 相同时 `sendBlockUpdated` 自动拦截发包 | 新增 `references/client_data_sync.md` §1 并登记发包避坑 |
+| 2026-08-02 | 1.21.1 客户端处理 BE 数据包走 `loadWithComponents` ➔ `loadAdditional`，`handleUpdateTag` 不被自动调用 | 沿用旧版 `handleUpdateTag` 习惯导致客户端数据反序列化漏读 | 新增 `references/client_data_sync.md` §2 并登记 `loadAdditional` 成对读写规则 |
